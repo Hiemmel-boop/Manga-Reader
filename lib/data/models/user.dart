@@ -1,8 +1,10 @@
 import 'package:isar/isar.dart';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 
 part 'user.g.dart';
 
-@Collection()
+@collection
 class User {
   Id id = Isar.autoIncrement;
 
@@ -18,17 +20,19 @@ class User {
   String? theme;
   String? defaultLanguage;
   bool notificationsEnabled = true;
-  int defaultReaderDirection = 0;
+  int defaultReaderDirection = 0; // 0 = horizontal, 1 = vertical
+  String readerTheme = 'dark';
 
-  User({
-    this.id = Isar.autoIncrement,
-    required this.username,
-    required this.email,
-    required this.passwordHash,
-    required this.createdAt,
-    this.theme,
-    this.defaultLanguage,
-    this.notificationsEnabled = true,
-    this.defaultReaderDirection = 0,
-  });
+  User();
+
+  // Hash sécurisé avec SHA-256
+  static String hashPassword(String password) {
+    final bytes = utf8.encode(password);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
+  static bool verifyPassword(String password, String storedHash) {
+    return hashPassword(password) == storedHash;
+  }
 }

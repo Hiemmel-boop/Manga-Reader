@@ -1,24 +1,44 @@
-// Pas besoin de Isar pour l'instant - stockage en mémoire
-class ReadingHistory {
-  final String id;
-  final String mangaId;
-  final String chapterId;
-  final String mangaTitle;
-  final String? mangaCoverUrl;
-  final String? chapterTitle;
-  final int? lastPage;
-  final DateTime readAt;
-  final bool isCompleted;
+import 'package:isar/isar.dart';
 
-  ReadingHistory({
-    required this.id,
-    required this.mangaId,
-    required this.chapterId,
-    required this.mangaTitle,
-    this.mangaCoverUrl,
-    this.chapterTitle,
-    this.lastPage,
-    required this.readAt,
-    this.isCompleted = false,
-  });
+part 'reading_history.g.dart';
+
+@collection
+class ReadingHistory {
+  Id id = Isar.autoIncrement;
+
+  @Index()
+  late String mangaId;
+
+  late String chapterId;
+  late String mangaTitle;
+  String? mangaCoverUrl;
+  String? chapterTitle;
+  String? chapterNumber;
+  int? lastPage;
+  late DateTime readAt;
+  bool isCompleted = false;
+
+  ReadingHistory();
+
+  factory ReadingHistory.create({
+    required String mangaId,
+    required String chapterId,
+    required String mangaTitle,
+    String? mangaCoverUrl,
+    String? chapterTitle,
+    String? chapterNumber,
+    int? lastPage,
+    bool isCompleted = false,
+  }) {
+    return ReadingHistory()
+      ..mangaId = mangaId
+      ..chapterId = chapterId
+      ..mangaTitle = mangaTitle
+      ..mangaCoverUrl = mangaCoverUrl
+      ..chapterTitle = chapterTitle
+      ..chapterNumber = chapterNumber
+      ..lastPage = lastPage
+      ..readAt = DateTime.now()
+      ..isCompleted = isCompleted;
+  }
 }

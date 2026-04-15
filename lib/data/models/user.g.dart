@@ -47,13 +47,18 @@ const UserSchema = CollectionSchema(
       name: r'passwordHash',
       type: IsarType.string,
     ),
-    r'theme': PropertySchema(
+    r'readerTheme': PropertySchema(
       id: 6,
+      name: r'readerTheme',
+      type: IsarType.string,
+    ),
+    r'theme': PropertySchema(
+      id: 7,
       name: r'theme',
       type: IsarType.string,
     ),
     r'username': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'username',
       type: IsarType.string,
     )
@@ -113,6 +118,7 @@ int _userEstimateSize(
   }
   bytesCount += 3 + object.email.length * 3;
   bytesCount += 3 + object.passwordHash.length * 3;
+  bytesCount += 3 + object.readerTheme.length * 3;
   {
     final value = object.theme;
     if (value != null) {
@@ -135,8 +141,9 @@ void _userSerialize(
   writer.writeString(offsets[3], object.email);
   writer.writeBool(offsets[4], object.notificationsEnabled);
   writer.writeString(offsets[5], object.passwordHash);
-  writer.writeString(offsets[6], object.theme);
-  writer.writeString(offsets[7], object.username);
+  writer.writeString(offsets[6], object.readerTheme);
+  writer.writeString(offsets[7], object.theme);
+  writer.writeString(offsets[8], object.username);
 }
 
 User _userDeserialize(
@@ -145,17 +152,17 @@ User _userDeserialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = User(
-    createdAt: reader.readDateTime(offsets[0]),
-    defaultLanguage: reader.readStringOrNull(offsets[1]),
-    defaultReaderDirection: reader.readLongOrNull(offsets[2]) ?? 0,
-    email: reader.readString(offsets[3]),
-    id: id,
-    notificationsEnabled: reader.readBoolOrNull(offsets[4]) ?? true,
-    passwordHash: reader.readString(offsets[5]),
-    theme: reader.readStringOrNull(offsets[6]),
-    username: reader.readString(offsets[7]),
-  );
+  final object = User();
+  object.createdAt = reader.readDateTime(offsets[0]);
+  object.defaultLanguage = reader.readStringOrNull(offsets[1]);
+  object.defaultReaderDirection = reader.readLong(offsets[2]);
+  object.email = reader.readString(offsets[3]);
+  object.id = id;
+  object.notificationsEnabled = reader.readBool(offsets[4]);
+  object.passwordHash = reader.readString(offsets[5]);
+  object.readerTheme = reader.readString(offsets[6]);
+  object.theme = reader.readStringOrNull(offsets[7]);
+  object.username = reader.readString(offsets[8]);
   return object;
 }
 
@@ -171,16 +178,18 @@ P _userDeserializeProp<P>(
     case 1:
       return (reader.readStringOrNull(offset)) as P;
     case 2:
-      return (reader.readLongOrNull(offset) ?? 0) as P;
+      return (reader.readLong(offset)) as P;
     case 3:
       return (reader.readString(offset)) as P;
     case 4:
-      return (reader.readBoolOrNull(offset) ?? true) as P;
+      return (reader.readBool(offset)) as P;
     case 5:
       return (reader.readString(offset)) as P;
     case 6:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 7:
+      return (reader.readStringOrNull(offset)) as P;
+    case 8:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1042,6 +1051,136 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
+  QueryBuilder<User, User, QAfterFilterCondition> readerThemeEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'readerTheme',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> readerThemeGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'readerTheme',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> readerThemeLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'readerTheme',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> readerThemeBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'readerTheme',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> readerThemeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'readerTheme',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> readerThemeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'readerTheme',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> readerThemeContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'readerTheme',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> readerThemeMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'readerTheme',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> readerThemeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'readerTheme',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> readerThemeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'readerTheme',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<User, User, QAfterFilterCondition> themeIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -1393,6 +1532,18 @@ extension UserQuerySortBy on QueryBuilder<User, User, QSortBy> {
     });
   }
 
+  QueryBuilder<User, User, QAfterSortBy> sortByReaderTheme() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'readerTheme', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> sortByReaderThemeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'readerTheme', Sort.desc);
+    });
+  }
+
   QueryBuilder<User, User, QAfterSortBy> sortByTheme() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'theme', Sort.asc);
@@ -1503,6 +1654,18 @@ extension UserQuerySortThenBy on QueryBuilder<User, User, QSortThenBy> {
     });
   }
 
+  QueryBuilder<User, User, QAfterSortBy> thenByReaderTheme() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'readerTheme', Sort.asc);
+    });
+  }
+
+  QueryBuilder<User, User, QAfterSortBy> thenByReaderThemeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'readerTheme', Sort.desc);
+    });
+  }
+
   QueryBuilder<User, User, QAfterSortBy> thenByTheme() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'theme', Sort.asc);
@@ -1569,6 +1732,13 @@ extension UserQueryWhereDistinct on QueryBuilder<User, User, QDistinct> {
     });
   }
 
+  QueryBuilder<User, User, QDistinct> distinctByReaderTheme(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'readerTheme', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<User, User, QDistinct> distinctByTheme(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1624,6 +1794,12 @@ extension UserQueryProperty on QueryBuilder<User, User, QQueryProperty> {
   QueryBuilder<User, String, QQueryOperations> passwordHashProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'passwordHash');
+    });
+  }
+
+  QueryBuilder<User, String, QQueryOperations> readerThemeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'readerTheme');
     });
   }
 

@@ -1,38 +1,44 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/datasources/remote/mangadex_api.dart';
-import '../../data/datasources/local/preferences.dart';
+import 'package:isar/isar.dart';
+import '../local/database.dart';
+import '../local/preferences.dart';
+import '../remote/mangadex_api.dart';
+import '../models/chapter.dart';
+import '../../core/logger.dart';
 
-// EXPORT DU PROVIDER
 final chapterRepositoryProvider = Provider<ChapterRepository>((ref) {
   return ChapterRepository(
     ref.watch(mangaDexApiProvider),
+    ref.watch(isarProvider),
     ref.watch(preferencesProvider),
   );
 });
 
 class ChapterRepository {
   final MangaDexApi _api;
+  final Isar _isar;
   final Preferences _prefs;
 
-  ChapterRepository(this._api, this._prefs);
+  ChapterRepository(this._api, this._isar, this._prefs);
 
   Future<List<Chapter>> getMangaChapters(String mangaId) async {
     try {
-      await _prefs.init();
-      final preferredLang = await _prefs.getDefaultLanguage() ?? 'fr';
-
-      final response = await _api.getMangaChapters(mangaId, language: preferredLang);
+      final language = await _prefs.getDefaultLanguage();
+      final response = await _api.getMangaChapters(mangaId, language: language);
       final List<dynamic> data = response.data['data'] ?? [];
 
-      List<Chapter> chapters = data.map((json) => Chapter.fromJson(json)).toList();
+      List<Chapter> chapters = data
+          .map((json) => Chapter.fromMangaDexJson(json, mangaId))
+          .toList();
 
-      chapters.removeWhere((c) => c.chapterNumber == null || c.chapterNumber!.isEmpty);
+      // Supprimer chapitres sans numéro
+      chapters.removeWhere((c) =>
+      c.chapterNumber == null || c.chapterNumber!.isEmpty);
 
+      // Dédoublonner — garder le plus récent par numéro
       final Map<String, Chapter> uniqueChapters = {};
-
       for (final chapter in chapters) {
         final key = chapter.chapterNumber!;
-
         if (uniqueChapters.containsKey(key)) {
           final existing = uniqueChapters[key]!;
           if (chapter.publishAt != null && existing.publishAt != null) {
@@ -45,81 +51,65 @@ class ChapterRepository {
         }
       }
 
-      final result = uniqueChapters.values.toList();
-      result.sort((a, b) {
-        final numA = double.tryParse(a.chapterNumber ?? '0') ?? 0;
-        final numB = double.tryParse(b.chapterNumber ?? '0') ?? 0;
-        return numA.compareTo(numB);
-      });
+      // Trier par numéro croissant
+      final result = uniqueChapters.values.toList()
+        ..sort((a, b) {
+          final numA = double.tryParse(a.chapterNumber ?? '0') ?? 0;
+          final numB = double.tryParse(b.chapterNumber ?? '0') ?? 0;
+          return numA.compareTo(numB);
+        });
 
       return result;
     } catch (e) {
-      throw Exception('Erreur chargement chapitres: $e');
+      appLogger.e('getMangaChapters', error: e);
+      throw Exception('Impossible de charger les chapitres');
     }
   }
 
   Future<List<String>> getChapterPages(String chapterId) async {
     try {
+      // Vérifier d'abord en local (pages téléchargées)
+      final local = await _isar.chapters
+          .filter()
+          .mangadexIdEqualTo(chapterId)
+          .findFirst();
+
+      if (local != null && local.pageUrls.isNotEmpty) {
+        return local.pageUrls;
+      }
+
+      // Sinon charger depuis l'API
       final response = await _api.getChapterPages(chapterId);
       final baseUrl = response.data['baseUrl'];
       final hash = response.data['chapter']['hash'];
       final List<dynamic> data = response.data['chapter']['data'];
 
-      return data.map<String>((page) => '$baseUrl/data/$hash/$page').toList();
+      return data
+          .map<String>((page) => '$baseUrl/data/$hash/$page')
+          .toList();
     } catch (e) {
-      throw Exception('Erreur chargement pages: $e');
+      appLogger.e('getChapterPages', error: e);
+      throw Exception('Impossible de charger les pages');
     }
   }
-}
 
-class Chapter {
-  final String id;
-  final String? title;
-  final String? chapterNumber;
-  final String? translatedLanguage;
-  final DateTime? publishAt;
-  final int? pages;
-  final String? scanlationGroup;
+  Future<void> markAsRead(String chapterId) async {
+    try {
+      final chapter = await _isar.chapters
+          .filter()
+          .mangadexIdEqualTo(chapterId)
+          .findFirst();
 
-  Chapter({
-    required this.id,
-    this.title,
-    this.chapterNumber,
-    this.translatedLanguage,
-    this.publishAt,
-    this.pages,
-    this.scanlationGroup,
-  });
-
-  factory Chapter.fromJson(Map<String, dynamic> json) {
-    final attributes = json['attributes'] ?? {};
-
-    String? scanGroup;
-    final relationships = json['relationships'] as List<dynamic>? ?? [];
-    for (final rel in relationships) {
-      if (rel['type'] == 'scanlation_group') {
-        scanGroup = rel['attributes']?['name'];
-        break;
+      if (chapter != null) {
+        await _isar.writeTxn(() async {
+          chapter
+            ..isRead = true
+            ..readAt = DateTime.now();
+          await _isar.chapters.put(chapter);
+        });
       }
+    } catch (e) {
+      appLogger.e('markAsRead', error: e);
     }
-
-    // CORRECTION: Convertir pages en int si c'est une String
-    final pagesValue = attributes['pages'];
-    int? pagesInt;
-    if (pagesValue != null) {
-      pagesInt = pagesValue is int ? pagesValue : int.tryParse(pagesValue.toString());
-    }
-
-    return Chapter(
-      id: json['id'],
-      title: attributes['title'],
-      chapterNumber: attributes['chapter']?.toString(), // Convertir en String
-      translatedLanguage: attributes['translatedLanguage'],
-      publishAt: attributes['publishAt'] != null
-          ? DateTime.parse(attributes['publishAt'])
-          : null,
-      pages: pagesInt,
-      scanlationGroup: scanGroup,
-    );
   }
 }

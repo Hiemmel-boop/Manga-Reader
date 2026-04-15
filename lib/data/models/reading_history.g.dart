@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'reading_progress.dart';
+part of 'reading_history.dart';
 
 // **************************************************************************
 // IsarCollectionGenerator
@@ -9,13 +9,13 @@ part of 'reading_progress.dart';
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
 
-extension GetReadingProgressCollection on Isar {
-  IsarCollection<ReadingProgress> get readingProgress => this.collection();
+extension GetReadingHistoryCollection on Isar {
+  IsarCollection<ReadingHistory> get readingHistorys => this.collection();
 }
 
-const ReadingProgressSchema = CollectionSchema(
-  name: r'ReadingProgress',
-  id: -2251063111460261641,
+const ReadingHistorySchema = CollectionSchema(
+  name: r'ReadingHistory',
+  id: 1167775608031651640,
   properties: {
     r'chapterId': PropertySchema(
       id: 0,
@@ -57,32 +57,22 @@ const ReadingProgressSchema = CollectionSchema(
       name: r'mangaTitle',
       type: IsarType.string,
     ),
-    r'progressPercentage': PropertySchema(
+    r'readAt': PropertySchema(
       id: 8,
-      name: r'progressPercentage',
-      type: IsarType.double,
-    ),
-    r'totalPages': PropertySchema(
-      id: 9,
-      name: r'totalPages',
-      type: IsarType.long,
-    ),
-    r'updatedAt': PropertySchema(
-      id: 10,
-      name: r'updatedAt',
+      name: r'readAt',
       type: IsarType.dateTime,
     )
   },
-  estimateSize: _readingProgressEstimateSize,
-  serialize: _readingProgressSerialize,
-  deserialize: _readingProgressDeserialize,
-  deserializeProp: _readingProgressDeserializeProp,
+  estimateSize: _readingHistoryEstimateSize,
+  serialize: _readingHistorySerialize,
+  deserialize: _readingHistoryDeserialize,
+  deserializeProp: _readingHistoryDeserializeProp,
   idName: r'id',
   indexes: {
     r'mangaId': IndexSchema(
       id: 7466570075891278896,
       name: r'mangaId',
-      unique: true,
+      unique: false,
       replace: false,
       properties: [
         IndexPropertySchema(
@@ -95,14 +85,14 @@ const ReadingProgressSchema = CollectionSchema(
   },
   links: {},
   embeddedSchemas: {},
-  getId: _readingProgressGetId,
-  getLinks: _readingProgressGetLinks,
-  attach: _readingProgressAttach,
+  getId: _readingHistoryGetId,
+  getLinks: _readingHistoryGetLinks,
+  attach: _readingHistoryAttach,
   version: '3.1.0+1',
 );
 
-int _readingProgressEstimateSize(
-  ReadingProgress object,
+int _readingHistoryEstimateSize(
+  ReadingHistory object,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
@@ -131,8 +121,8 @@ int _readingProgressEstimateSize(
   return bytesCount;
 }
 
-void _readingProgressSerialize(
-  ReadingProgress object,
+void _readingHistorySerialize(
+  ReadingHistory object,
   IsarWriter writer,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
@@ -145,32 +135,30 @@ void _readingProgressSerialize(
   writer.writeString(offsets[5], object.mangaCoverUrl);
   writer.writeString(offsets[6], object.mangaId);
   writer.writeString(offsets[7], object.mangaTitle);
-  writer.writeDouble(offsets[8], object.progressPercentage);
-  writer.writeLong(offsets[9], object.totalPages);
-  writer.writeDateTime(offsets[10], object.updatedAt);
+  writer.writeDateTime(offsets[8], object.readAt);
 }
 
-ReadingProgress _readingProgressDeserialize(
+ReadingHistory _readingHistoryDeserialize(
   Id id,
   IsarReader reader,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = ReadingProgress();
+  final object = ReadingHistory();
   object.chapterId = reader.readString(offsets[0]);
   object.chapterNumber = reader.readStringOrNull(offsets[1]);
   object.chapterTitle = reader.readStringOrNull(offsets[2]);
   object.id = id;
-  object.lastPage = reader.readLong(offsets[4]);
+  object.isCompleted = reader.readBool(offsets[3]);
+  object.lastPage = reader.readLongOrNull(offsets[4]);
   object.mangaCoverUrl = reader.readStringOrNull(offsets[5]);
   object.mangaId = reader.readString(offsets[6]);
   object.mangaTitle = reader.readString(offsets[7]);
-  object.totalPages = reader.readLong(offsets[9]);
-  object.updatedAt = reader.readDateTime(offsets[10]);
+  object.readAt = reader.readDateTime(offsets[8]);
   return object;
 }
 
-P _readingProgressDeserializeProp<P>(
+P _readingHistoryDeserializeProp<P>(
   IsarReader reader,
   int propertyId,
   int offset,
@@ -186,7 +174,7 @@ P _readingProgressDeserializeProp<P>(
     case 3:
       return (reader.readBool(offset)) as P;
     case 4:
-      return (reader.readLong(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 5:
       return (reader.readStringOrNull(offset)) as P;
     case 6:
@@ -194,96 +182,37 @@ P _readingProgressDeserializeProp<P>(
     case 7:
       return (reader.readString(offset)) as P;
     case 8:
-      return (reader.readDouble(offset)) as P;
-    case 9:
-      return (reader.readLong(offset)) as P;
-    case 10:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
 
-Id _readingProgressGetId(ReadingProgress object) {
+Id _readingHistoryGetId(ReadingHistory object) {
   return object.id;
 }
 
-List<IsarLinkBase<dynamic>> _readingProgressGetLinks(ReadingProgress object) {
+List<IsarLinkBase<dynamic>> _readingHistoryGetLinks(ReadingHistory object) {
   return [];
 }
 
-void _readingProgressAttach(
-    IsarCollection<dynamic> col, Id id, ReadingProgress object) {
+void _readingHistoryAttach(
+    IsarCollection<dynamic> col, Id id, ReadingHistory object) {
   object.id = id;
 }
 
-extension ReadingProgressByIndex on IsarCollection<ReadingProgress> {
-  Future<ReadingProgress?> getByMangaId(String mangaId) {
-    return getByIndex(r'mangaId', [mangaId]);
-  }
-
-  ReadingProgress? getByMangaIdSync(String mangaId) {
-    return getByIndexSync(r'mangaId', [mangaId]);
-  }
-
-  Future<bool> deleteByMangaId(String mangaId) {
-    return deleteByIndex(r'mangaId', [mangaId]);
-  }
-
-  bool deleteByMangaIdSync(String mangaId) {
-    return deleteByIndexSync(r'mangaId', [mangaId]);
-  }
-
-  Future<List<ReadingProgress?>> getAllByMangaId(List<String> mangaIdValues) {
-    final values = mangaIdValues.map((e) => [e]).toList();
-    return getAllByIndex(r'mangaId', values);
-  }
-
-  List<ReadingProgress?> getAllByMangaIdSync(List<String> mangaIdValues) {
-    final values = mangaIdValues.map((e) => [e]).toList();
-    return getAllByIndexSync(r'mangaId', values);
-  }
-
-  Future<int> deleteAllByMangaId(List<String> mangaIdValues) {
-    final values = mangaIdValues.map((e) => [e]).toList();
-    return deleteAllByIndex(r'mangaId', values);
-  }
-
-  int deleteAllByMangaIdSync(List<String> mangaIdValues) {
-    final values = mangaIdValues.map((e) => [e]).toList();
-    return deleteAllByIndexSync(r'mangaId', values);
-  }
-
-  Future<Id> putByMangaId(ReadingProgress object) {
-    return putByIndex(r'mangaId', object);
-  }
-
-  Id putByMangaIdSync(ReadingProgress object, {bool saveLinks = true}) {
-    return putByIndexSync(r'mangaId', object, saveLinks: saveLinks);
-  }
-
-  Future<List<Id>> putAllByMangaId(List<ReadingProgress> objects) {
-    return putAllByIndex(r'mangaId', objects);
-  }
-
-  List<Id> putAllByMangaIdSync(List<ReadingProgress> objects,
-      {bool saveLinks = true}) {
-    return putAllByIndexSync(r'mangaId', objects, saveLinks: saveLinks);
-  }
-}
-
-extension ReadingProgressQueryWhereSort
-    on QueryBuilder<ReadingProgress, ReadingProgress, QWhere> {
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterWhere> anyId() {
+extension ReadingHistoryQueryWhereSort
+    on QueryBuilder<ReadingHistory, ReadingHistory, QWhere> {
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
 }
 
-extension ReadingProgressQueryWhere
-    on QueryBuilder<ReadingProgress, ReadingProgress, QWhereClause> {
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterWhereClause> idEqualTo(
+extension ReadingHistoryQueryWhere
+    on QueryBuilder<ReadingHistory, ReadingHistory, QWhereClause> {
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterWhereClause> idEqualTo(
       Id id) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
@@ -293,8 +222,8 @@ extension ReadingProgressQueryWhere
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterWhereClause>
-      idNotEqualTo(Id id) {
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterWhereClause> idNotEqualTo(
+      Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -316,8 +245,9 @@ extension ReadingProgressQueryWhere
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterWhereClause>
-      idGreaterThan(Id id, {bool include = false}) {
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterWhereClause> idGreaterThan(
+      Id id,
+      {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -325,7 +255,7 @@ extension ReadingProgressQueryWhere
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterWhereClause> idLessThan(
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterWhereClause> idLessThan(
       Id id,
       {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
@@ -335,7 +265,7 @@ extension ReadingProgressQueryWhere
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterWhereClause> idBetween(
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterWhereClause> idBetween(
     Id lowerId,
     Id upperId, {
     bool includeLower = true,
@@ -351,7 +281,7 @@ extension ReadingProgressQueryWhere
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterWhereClause>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterWhereClause>
       mangaIdEqualTo(String mangaId) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
@@ -361,7 +291,7 @@ extension ReadingProgressQueryWhere
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterWhereClause>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterWhereClause>
       mangaIdNotEqualTo(String mangaId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
@@ -397,9 +327,9 @@ extension ReadingProgressQueryWhere
   }
 }
 
-extension ReadingProgressQueryFilter
-    on QueryBuilder<ReadingProgress, ReadingProgress, QFilterCondition> {
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+extension ReadingHistoryQueryFilter
+    on QueryBuilder<ReadingHistory, ReadingHistory, QFilterCondition> {
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterIdEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -413,7 +343,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterIdGreaterThan(
     String value, {
     bool include = false,
@@ -429,7 +359,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterIdLessThan(
     String value, {
     bool include = false,
@@ -445,7 +375,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterIdBetween(
     String lower,
     String upper, {
@@ -465,7 +395,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterIdStartsWith(
     String value, {
     bool caseSensitive = true,
@@ -479,7 +409,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterIdEndsWith(
     String value, {
     bool caseSensitive = true,
@@ -493,7 +423,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterIdContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
@@ -504,7 +434,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterIdMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
@@ -515,7 +445,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -525,7 +455,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
@@ -535,7 +465,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterNumberIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -544,7 +474,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterNumberIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
@@ -553,7 +483,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterNumberEqualTo(
     String? value, {
     bool caseSensitive = true,
@@ -567,7 +497,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterNumberGreaterThan(
     String? value, {
     bool include = false,
@@ -583,7 +513,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterNumberLessThan(
     String? value, {
     bool include = false,
@@ -599,7 +529,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterNumberBetween(
     String? lower,
     String? upper, {
@@ -619,7 +549,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterNumberStartsWith(
     String value, {
     bool caseSensitive = true,
@@ -633,7 +563,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterNumberEndsWith(
     String value, {
     bool caseSensitive = true,
@@ -647,7 +577,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterNumberContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
@@ -658,7 +588,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterNumberMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
@@ -669,7 +599,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterNumberIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -679,7 +609,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterNumberIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
@@ -689,7 +619,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterTitleIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -698,7 +628,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterTitleIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
@@ -707,7 +637,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterTitleEqualTo(
     String? value, {
     bool caseSensitive = true,
@@ -721,7 +651,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterTitleGreaterThan(
     String? value, {
     bool include = false,
@@ -737,7 +667,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterTitleLessThan(
     String? value, {
     bool include = false,
@@ -753,7 +683,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterTitleBetween(
     String? lower,
     String? upper, {
@@ -773,7 +703,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterTitleStartsWith(
     String value, {
     bool caseSensitive = true,
@@ -787,7 +717,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterTitleEndsWith(
     String value, {
     bool caseSensitive = true,
@@ -801,7 +731,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterTitleContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
@@ -812,7 +742,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterTitleMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
@@ -823,7 +753,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterTitleIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -833,7 +763,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       chapterTitleIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
@@ -843,8 +773,8 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
-      idEqualTo(Id value) {
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition> idEqualTo(
+      Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'id',
@@ -853,7 +783,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       idGreaterThan(
     Id value, {
     bool include = false,
@@ -867,7 +797,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       idLessThan(
     Id value, {
     bool include = false,
@@ -881,8 +811,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
-      idBetween(
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition> idBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
@@ -899,7 +828,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       isCompletedEqualTo(bool value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -909,8 +838,26 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
-      lastPageEqualTo(int value) {
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
+      lastPageIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'lastPage',
+      ));
+    });
+  }
+
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
+      lastPageIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'lastPage',
+      ));
+    });
+  }
+
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
+      lastPageEqualTo(int? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'lastPage',
@@ -919,9 +866,9 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       lastPageGreaterThan(
-    int value, {
+    int? value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -933,9 +880,9 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       lastPageLessThan(
-    int value, {
+    int? value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -947,10 +894,10 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       lastPageBetween(
-    int lower,
-    int upper, {
+    int? lower,
+    int? upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
@@ -965,7 +912,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaCoverUrlIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -974,7 +921,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaCoverUrlIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
@@ -983,7 +930,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaCoverUrlEqualTo(
     String? value, {
     bool caseSensitive = true,
@@ -997,7 +944,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaCoverUrlGreaterThan(
     String? value, {
     bool include = false,
@@ -1013,7 +960,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaCoverUrlLessThan(
     String? value, {
     bool include = false,
@@ -1029,7 +976,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaCoverUrlBetween(
     String? lower,
     String? upper, {
@@ -1049,7 +996,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaCoverUrlStartsWith(
     String value, {
     bool caseSensitive = true,
@@ -1063,7 +1010,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaCoverUrlEndsWith(
     String value, {
     bool caseSensitive = true,
@@ -1077,7 +1024,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaCoverUrlContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
@@ -1088,7 +1035,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaCoverUrlMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
@@ -1099,7 +1046,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaCoverUrlIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -1109,7 +1056,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaCoverUrlIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
@@ -1119,7 +1066,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaIdEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -1133,7 +1080,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaIdGreaterThan(
     String value, {
     bool include = false,
@@ -1149,7 +1096,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaIdLessThan(
     String value, {
     bool include = false,
@@ -1165,7 +1112,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaIdBetween(
     String lower,
     String upper, {
@@ -1185,7 +1132,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaIdStartsWith(
     String value, {
     bool caseSensitive = true,
@@ -1199,7 +1146,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaIdEndsWith(
     String value, {
     bool caseSensitive = true,
@@ -1213,7 +1160,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaIdContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
@@ -1224,7 +1171,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaIdMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
@@ -1235,7 +1182,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -1245,7 +1192,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
@@ -1255,7 +1202,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaTitleEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -1269,7 +1216,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaTitleGreaterThan(
     String value, {
     bool include = false,
@@ -1285,7 +1232,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaTitleLessThan(
     String value, {
     bool include = false,
@@ -1301,7 +1248,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaTitleBetween(
     String lower,
     String upper, {
@@ -1321,7 +1268,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaTitleStartsWith(
     String value, {
     bool caseSensitive = true,
@@ -1335,7 +1282,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaTitleEndsWith(
     String value, {
     bool caseSensitive = true,
@@ -1349,7 +1296,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaTitleContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
@@ -1360,7 +1307,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaTitleMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
@@ -1371,7 +1318,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaTitleIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -1381,7 +1328,7 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
       mangaTitleIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
@@ -1391,168 +1338,46 @@ extension ReadingProgressQueryFilter
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
-      progressPercentageEqualTo(
-    double value, {
-    double epsilon = Query.epsilon,
-  }) {
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
+      readAtEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'progressPercentage',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
-      progressPercentageGreaterThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'progressPercentage',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
-      progressPercentageLessThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'progressPercentage',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
-      progressPercentageBetween(
-    double lower,
-    double upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'progressPercentage',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
-      totalPagesEqualTo(int value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'totalPages',
+        property: r'readAt',
         value: value,
       ));
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
-      totalPagesGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'totalPages',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
-      totalPagesLessThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'totalPages',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
-      totalPagesBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'totalPages',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
-      updatedAtEqualTo(DateTime value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'updatedAt',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
-      updatedAtGreaterThan(
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
+      readAtGreaterThan(
     DateTime value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'updatedAt',
+        property: r'readAt',
         value: value,
       ));
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
-      updatedAtLessThan(
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
+      readAtLessThan(
     DateTime value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'updatedAt',
+        property: r'readAt',
         value: value,
       ));
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterFilterCondition>
-      updatedAtBetween(
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterFilterCondition>
+      readAtBetween(
     DateTime lower,
     DateTime upper, {
     bool includeLower = true,
@@ -1560,7 +1385,7 @@ extension ReadingProgressQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'updatedAt',
+        property: r'readAt',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1570,346 +1395,284 @@ extension ReadingProgressQueryFilter
   }
 }
 
-extension ReadingProgressQueryObject
-    on QueryBuilder<ReadingProgress, ReadingProgress, QFilterCondition> {}
+extension ReadingHistoryQueryObject
+    on QueryBuilder<ReadingHistory, ReadingHistory, QFilterCondition> {}
 
-extension ReadingProgressQueryLinks
-    on QueryBuilder<ReadingProgress, ReadingProgress, QFilterCondition> {}
+extension ReadingHistoryQueryLinks
+    on QueryBuilder<ReadingHistory, ReadingHistory, QFilterCondition> {}
 
-extension ReadingProgressQuerySortBy
-    on QueryBuilder<ReadingProgress, ReadingProgress, QSortBy> {
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
-      sortByChapterId() {
+extension ReadingHistoryQuerySortBy
+    on QueryBuilder<ReadingHistory, ReadingHistory, QSortBy> {
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy> sortByChapterId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'chapterId', Sort.asc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       sortByChapterIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'chapterId', Sort.desc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       sortByChapterNumber() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'chapterNumber', Sort.asc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       sortByChapterNumberDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'chapterNumber', Sort.desc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       sortByChapterTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'chapterTitle', Sort.asc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       sortByChapterTitleDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'chapterTitle', Sort.desc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       sortByIsCompleted() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isCompleted', Sort.asc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       sortByIsCompletedDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isCompleted', Sort.desc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
-      sortByLastPage() {
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy> sortByLastPage() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastPage', Sort.asc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       sortByLastPageDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastPage', Sort.desc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       sortByMangaCoverUrl() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'mangaCoverUrl', Sort.asc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       sortByMangaCoverUrlDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'mangaCoverUrl', Sort.desc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy> sortByMangaId() {
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy> sortByMangaId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'mangaId', Sort.asc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       sortByMangaIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'mangaId', Sort.desc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       sortByMangaTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'mangaTitle', Sort.asc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       sortByMangaTitleDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'mangaTitle', Sort.desc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
-      sortByProgressPercentage() {
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy> sortByReadAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'progressPercentage', Sort.asc);
+      return query.addSortBy(r'readAt', Sort.asc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
-      sortByProgressPercentageDesc() {
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
+      sortByReadAtDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'progressPercentage', Sort.desc);
-    });
-  }
-
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
-      sortByTotalPages() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'totalPages', Sort.asc);
-    });
-  }
-
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
-      sortByTotalPagesDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'totalPages', Sort.desc);
-    });
-  }
-
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
-      sortByUpdatedAt() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'updatedAt', Sort.asc);
-    });
-  }
-
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
-      sortByUpdatedAtDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'updatedAt', Sort.desc);
+      return query.addSortBy(r'readAt', Sort.desc);
     });
   }
 }
 
-extension ReadingProgressQuerySortThenBy
-    on QueryBuilder<ReadingProgress, ReadingProgress, QSortThenBy> {
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
-      thenByChapterId() {
+extension ReadingHistoryQuerySortThenBy
+    on QueryBuilder<ReadingHistory, ReadingHistory, QSortThenBy> {
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy> thenByChapterId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'chapterId', Sort.asc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       thenByChapterIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'chapterId', Sort.desc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       thenByChapterNumber() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'chapterNumber', Sort.asc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       thenByChapterNumberDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'chapterNumber', Sort.desc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       thenByChapterTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'chapterTitle', Sort.asc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       thenByChapterTitleDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'chapterTitle', Sort.desc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy> thenById() {
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy> thenByIdDesc() {
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy> thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       thenByIsCompleted() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isCompleted', Sort.asc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       thenByIsCompletedDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isCompleted', Sort.desc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
-      thenByLastPage() {
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy> thenByLastPage() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastPage', Sort.asc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       thenByLastPageDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastPage', Sort.desc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       thenByMangaCoverUrl() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'mangaCoverUrl', Sort.asc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       thenByMangaCoverUrlDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'mangaCoverUrl', Sort.desc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy> thenByMangaId() {
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy> thenByMangaId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'mangaId', Sort.asc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       thenByMangaIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'mangaId', Sort.desc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       thenByMangaTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'mangaTitle', Sort.asc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
       thenByMangaTitleDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'mangaTitle', Sort.desc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
-      thenByProgressPercentage() {
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy> thenByReadAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'progressPercentage', Sort.asc);
+      return query.addSortBy(r'readAt', Sort.asc);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
-      thenByProgressPercentageDesc() {
+  QueryBuilder<ReadingHistory, ReadingHistory, QAfterSortBy>
+      thenByReadAtDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'progressPercentage', Sort.desc);
-    });
-  }
-
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
-      thenByTotalPages() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'totalPages', Sort.asc);
-    });
-  }
-
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
-      thenByTotalPagesDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'totalPages', Sort.desc);
-    });
-  }
-
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
-      thenByUpdatedAt() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'updatedAt', Sort.asc);
-    });
-  }
-
-  QueryBuilder<ReadingProgress, ReadingProgress, QAfterSortBy>
-      thenByUpdatedAtDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'updatedAt', Sort.desc);
+      return query.addSortBy(r'readAt', Sort.desc);
     });
   }
 }
 
-extension ReadingProgressQueryWhereDistinct
-    on QueryBuilder<ReadingProgress, ReadingProgress, QDistinct> {
-  QueryBuilder<ReadingProgress, ReadingProgress, QDistinct> distinctByChapterId(
+extension ReadingHistoryQueryWhereDistinct
+    on QueryBuilder<ReadingHistory, ReadingHistory, QDistinct> {
+  QueryBuilder<ReadingHistory, ReadingHistory, QDistinct> distinctByChapterId(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'chapterId', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QDistinct>
+  QueryBuilder<ReadingHistory, ReadingHistory, QDistinct>
       distinctByChapterNumber({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'chapterNumber',
@@ -1917,28 +1680,27 @@ extension ReadingProgressQueryWhereDistinct
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QDistinct>
+  QueryBuilder<ReadingHistory, ReadingHistory, QDistinct>
       distinctByChapterTitle({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'chapterTitle', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QDistinct>
+  QueryBuilder<ReadingHistory, ReadingHistory, QDistinct>
       distinctByIsCompleted() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'isCompleted');
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QDistinct>
-      distinctByLastPage() {
+  QueryBuilder<ReadingHistory, ReadingHistory, QDistinct> distinctByLastPage() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'lastPage');
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QDistinct>
+  QueryBuilder<ReadingHistory, ReadingHistory, QDistinct>
       distinctByMangaCoverUrl({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'mangaCoverUrl',
@@ -1946,118 +1708,89 @@ extension ReadingProgressQueryWhereDistinct
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QDistinct> distinctByMangaId(
+  QueryBuilder<ReadingHistory, ReadingHistory, QDistinct> distinctByMangaId(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'mangaId', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QDistinct>
-      distinctByMangaTitle({bool caseSensitive = true}) {
+  QueryBuilder<ReadingHistory, ReadingHistory, QDistinct> distinctByMangaTitle(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'mangaTitle', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<ReadingProgress, ReadingProgress, QDistinct>
-      distinctByProgressPercentage() {
+  QueryBuilder<ReadingHistory, ReadingHistory, QDistinct> distinctByReadAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'progressPercentage');
-    });
-  }
-
-  QueryBuilder<ReadingProgress, ReadingProgress, QDistinct>
-      distinctByTotalPages() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'totalPages');
-    });
-  }
-
-  QueryBuilder<ReadingProgress, ReadingProgress, QDistinct>
-      distinctByUpdatedAt() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'updatedAt');
+      return query.addDistinctBy(r'readAt');
     });
   }
 }
 
-extension ReadingProgressQueryProperty
-    on QueryBuilder<ReadingProgress, ReadingProgress, QQueryProperty> {
-  QueryBuilder<ReadingProgress, int, QQueryOperations> idProperty() {
+extension ReadingHistoryQueryProperty
+    on QueryBuilder<ReadingHistory, ReadingHistory, QQueryProperty> {
+  QueryBuilder<ReadingHistory, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
     });
   }
 
-  QueryBuilder<ReadingProgress, String, QQueryOperations> chapterIdProperty() {
+  QueryBuilder<ReadingHistory, String, QQueryOperations> chapterIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'chapterId');
     });
   }
 
-  QueryBuilder<ReadingProgress, String?, QQueryOperations>
+  QueryBuilder<ReadingHistory, String?, QQueryOperations>
       chapterNumberProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'chapterNumber');
     });
   }
 
-  QueryBuilder<ReadingProgress, String?, QQueryOperations>
+  QueryBuilder<ReadingHistory, String?, QQueryOperations>
       chapterTitleProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'chapterTitle');
     });
   }
 
-  QueryBuilder<ReadingProgress, bool, QQueryOperations> isCompletedProperty() {
+  QueryBuilder<ReadingHistory, bool, QQueryOperations> isCompletedProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isCompleted');
     });
   }
 
-  QueryBuilder<ReadingProgress, int, QQueryOperations> lastPageProperty() {
+  QueryBuilder<ReadingHistory, int?, QQueryOperations> lastPageProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'lastPage');
     });
   }
 
-  QueryBuilder<ReadingProgress, String?, QQueryOperations>
+  QueryBuilder<ReadingHistory, String?, QQueryOperations>
       mangaCoverUrlProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'mangaCoverUrl');
     });
   }
 
-  QueryBuilder<ReadingProgress, String, QQueryOperations> mangaIdProperty() {
+  QueryBuilder<ReadingHistory, String, QQueryOperations> mangaIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'mangaId');
     });
   }
 
-  QueryBuilder<ReadingProgress, String, QQueryOperations> mangaTitleProperty() {
+  QueryBuilder<ReadingHistory, String, QQueryOperations> mangaTitleProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'mangaTitle');
     });
   }
 
-  QueryBuilder<ReadingProgress, double, QQueryOperations>
-      progressPercentageProperty() {
+  QueryBuilder<ReadingHistory, DateTime, QQueryOperations> readAtProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'progressPercentage');
-    });
-  }
-
-  QueryBuilder<ReadingProgress, int, QQueryOperations> totalPagesProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'totalPages');
-    });
-  }
-
-  QueryBuilder<ReadingProgress, DateTime, QQueryOperations>
-      updatedAtProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'updatedAt');
+      return query.addPropertyName(r'readAt');
     });
   }
 }

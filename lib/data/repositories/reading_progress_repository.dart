@@ -1,59 +1,114 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar/isar.dart';
-import '../datasources/local/database.dart';
+import '../local/database.dart';
 import '../models/reading_progress.dart';
+import '../models/reading_history.dart';
+import '../../core/logger.dart';
 
 final readingProgressRepositoryProvider = Provider<ReadingProgressRepository>((ref) {
-  return ReadingProgressRepository(ref.watch(isarProvider.future));
+  return ReadingProgressRepository(ref.watch(isarProvider));
 });
 
 class ReadingProgressRepository {
-  final Future<Isar> _dbFuture;
+  final Isar _isar;
 
-  ReadingProgressRepository(this._dbFuture);
+  ReadingProgressRepository(this._isar);
 
-  Future<void> saveProgress(ReadingProgress progress) async {
-    final db = await _dbFuture;
+  // ─── PROGRESSION ──────────────────────────────────────
 
-    // Le nom est "readingProgress" (pas "readingProgresss")
-    final existing = await db.readingProgress
-        .filter()
-        .mangaIdEqualTo(progress.mangaId)
-        .findFirst();
+  Future<void> saveProgress({
+    required String mangaId,
+    required String chapterId,
+    required String mangaTitle,
+    String? mangaCoverUrl,
+    String? chapterTitle,
+    String? chapterNumber,
+    required int lastPage,
+    required int totalPages,
+  }) async {
+    try {
+      final progress = ReadingProgress.create(
+        mangaId: mangaId,
+        chapterId: chapterId,
+        mangaTitle: mangaTitle,
+        mangaCoverUrl: mangaCoverUrl,
+        chapterTitle: chapterTitle,
+        chapterNumber: chapterNumber,
+        lastPage: lastPage,
+        totalPages: totalPages,
+      );
 
-    if (existing != null) {
-      progress.id = existing.id;
+      final existing = await _isar.readingProgress
+          .filter()
+          .mangaIdEqualTo(mangaId)
+          .findFirst();
+
+      await _isar.writeTxn(() async {
+        if (existing != null) progress.id = existing.id;
+        await _isar.readingProgress.put(progress);
+      });
+    } catch (e) {
+      appLogger.e('saveProgress', error: e);
     }
-
-    await db.writeTxn(() => db.readingProgress.put(progress));
   }
 
   Future<ReadingProgress?> getProgress(String mangaId) async {
-    final db = await _dbFuture;
-    return db.readingProgress
+    return _isar.readingProgress
         .filter()
         .mangaIdEqualTo(mangaId)
         .findFirst();
   }
 
-  Future<List<ReadingProgress>> getRecentProgress({int limit = 10}) async {
-    final db = await _dbFuture;
-    return db.readingProgress
+  Future<void> deleteProgress(String mangaId) async {
+    final existing = await _isar.readingProgress
+        .filter()
+        .mangaIdEqualTo(mangaId)
+        .findFirst();
+
+    if (existing != null) {
+      await _isar.writeTxn(() => _isar.readingProgress.delete(existing.id));
+    }
+  }
+
+  // ─── HISTORIQUE ────────────────────────────────────────
+
+  Future<void> addToHistory({
+    required String mangaId,
+    required String chapterId,
+    required String mangaTitle,
+    String? mangaCoverUrl,
+    String? chapterTitle,
+    String? chapterNumber,
+    int? lastPage,
+    bool isCompleted = false,
+  }) async {
+    try {
+      final history = ReadingHistory.create(
+        mangaId: mangaId,
+        chapterId: chapterId,
+        mangaTitle: mangaTitle,
+        mangaCoverUrl: mangaCoverUrl,
+        chapterTitle: chapterTitle,
+        chapterNumber: chapterNumber,
+        lastPage: lastPage,
+        isCompleted: isCompleted,
+      );
+
+      await _isar.writeTxn(() => _isar.readingHistorys.put(history));
+    } catch (e) {
+      appLogger.e('addToHistory', error: e);
+    }
+  }
+
+  Future<List<ReadingHistory>> getHistory({int limit = 50}) async {
+    return _isar.readingHistorys
         .where()
-        .sortByUpdatedAtDesc()
+        .sortByReadAtDesc()
         .limit(limit)
         .findAll();
   }
 
-  Future<void> deleteProgress(String mangaId) async {
-    final db = await _dbFuture;
-    final existing = await db.readingProgress
-        .filter()
-        .mangaIdEqualTo(mangaId)
-        .findFirst();
-
-    if (existing != null) {
-      await db.writeTxn(() => db.readingProgress.delete(existing.id));
-    }
+  Future<void> clearHistory() async {
+    await _isar.writeTxn(() => _isar.readingHistorys.clear());
   }
 }
