@@ -10,6 +10,7 @@ import '../../data/models/manga.dart';
 import '../../data/models/chapter.dart';
 import '../../config/theme.dart';
 import '../../config/constants.dart';
+import '../../services/download_service.dart';
 
 class MangaDetailPage extends ConsumerWidget {
   final String mangaId;
@@ -108,6 +109,9 @@ class MangaDetailPage extends ConsumerWidget {
                   delegate: SliverChildBuilderDelegate(
                         (_, i) => _ChapterTile(
                       chapter: chapters[i],
+                      mangaId: manga.mangadexId,
+                      mangaTitle: manga.title,
+                      mangaCoverUrl: manga.coverUrl,
                       onTap: () => _openReader(context, chapters[i], manga),
                     ),
                     childCount: chapters.length,
@@ -266,13 +270,29 @@ class _StatusChip extends StatelessWidget {
   }
 }
 
-class _ChapterTile extends StatelessWidget {
+class _ChapterTile extends ConsumerWidget {
   final Chapter chapter;
+  final String mangaId;
+  final String mangaTitle;
+  final String? mangaCoverUrl;
   final VoidCallback onTap;
-  const _ChapterTile({required this.chapter, required this.onTap});
+
+  const _ChapterTile({
+    required this.chapter,
+    required this.mangaId,
+    required this.mangaTitle,
+    required this.mangaCoverUrl,
+    required this.onTap,
+  });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final downloadStates = ref.watch(downloadStatesProvider);
+    final dlState = downloadStates[chapter.mangadexId];
+    final isDownloading = dlState != null && !dlState.isComplete && !dlState.hasError;
+    final isDownloaded = chapter.pageUrls.isNotEmpty &&
+        chapter.pageUrls.first.startsWith('/');
+
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: chapter.isRead ? Colors.grey[700] : AppColors.primary,
@@ -283,7 +303,8 @@ class _ChapterTile extends StatelessWidget {
       ),
       title: Text(chapter.displayTitle),
       subtitle: chapter.translatedLanguage != null
-          ? Text('Langue: ${chapter.translatedLanguage}', style: const TextStyle(fontSize: 12))
+          ? Text('Langue: ${chapter.translatedLanguage}',
+          style: const TextStyle(fontSize: 12))
           : null,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -291,10 +312,47 @@ class _ChapterTile extends StatelessWidget {
           if (chapter.isRead)
             Icon(Icons.check_circle, size: 16, color: Colors.green[400]),
           const SizedBox(width: 4),
+          if (isDownloading)
+            SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(
+                value: dlState.progress,
+                strokeWidth: 2.5,
+                color: AppColors.primary,
+              ),
+            )
+          else if (isDownloaded)
+            Icon(Icons.download_done_rounded, size: 18, color: Colors.green[400])
+          else
+            IconButton(
+              icon: const Icon(Icons.download_outlined, size: 18),
+              color: Colors.grey[500],
+              onPressed: () => _download(context, ref),
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+          const SizedBox(width: 4),
           const Icon(Icons.arrow_forward_ios, size: 14),
         ],
       ),
       onTap: onTap,
+    );
+  }
+
+  void _download(BuildContext context, WidgetRef ref) {
+    ref.read(downloadServiceProvider).downloadChapter(
+      chapterId: chapter.mangadexId,
+      mangaId: mangaId,
+      mangaTitle: mangaTitle,
+      chapterTitle: chapter.displayTitle,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Téléchargement de ${chapter.displayTitle} démarré'),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 }

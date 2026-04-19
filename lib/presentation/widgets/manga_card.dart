@@ -5,6 +5,7 @@ import '../../data/models/manga.dart';
 import '../../config/constants.dart';
 import '../../config/theme.dart';
 
+// ─── CARTE HORIZONTALE (home, bibliothèque) ───────────────────────────────────
 class MangaCard extends StatelessWidget {
   final Manga manga;
   final VoidCallback onTap;
@@ -16,8 +17,8 @@ class MangaCard extends StatelessWidget {
     super.key,
     required this.manga,
     required this.onTap,
-    this.width = 140,
-    this.height = 200,
+    this.width = 130,
+    this.height = 190,
     this.showAuthor = true,
   });
 
@@ -27,34 +28,66 @@ class MangaCard extends StatelessWidget {
       onTap: onTap,
       child: SizedBox(
         width: width,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(AppRadius.card),
-              child: _buildCover(),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              manga.title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            if (showAuthor && manga.author != null)
-              Text(
-                manga.author!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.grey[500],
+        height: height,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              _buildCover(),
+              // Dégradé + titre intégré — plus de débordement possible
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.transparent, Colors.black87],
+                      stops: [0.3, 1.0],
+                    ),
+                  ),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.sm,
+                    AppSpacing.xl,
+                    AppSpacing.sm,
+                    AppSpacing.sm,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        manga.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          height: 1.3,
+                        ),
+                      ),
+                      if (showAuthor && manga.author != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          manga.author!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white60,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -64,8 +97,6 @@ class MangaCard extends StatelessWidget {
     if (manga.coverUrl != null) {
       return CachedNetworkImage(
         imageUrl: manga.coverUrl!,
-        height: height,
-        width: width,
         fit: BoxFit.cover,
         placeholder: (_, __) => _shimmer(),
         errorWidget: (_, __, ___) => _placeholder(),
@@ -74,29 +105,19 @@ class MangaCard extends StatelessWidget {
     return _placeholder();
   }
 
-  Widget _shimmer() {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey[800]!,
-      highlightColor: Colors.grey[600]!,
-      child: Container(
-        height: height,
-        width: width,
-        color: Colors.grey[800],
-      ),
-    );
-  }
+  Widget _shimmer() => Shimmer.fromColors(
+    baseColor: Colors.grey[800]!,
+    highlightColor: Colors.grey[600]!,
+    child: Container(color: Colors.grey[800]),
+  );
 
-  Widget _placeholder() {
-    return Container(
-      height: height,
-      width: width,
-      color: Colors.grey[850],
-      child: const Icon(Icons.menu_book, color: Colors.grey, size: 40),
-    );
-  }
+  Widget _placeholder() => Container(
+    color: Colors.grey[850],
+    child: const Icon(Icons.menu_book, color: Colors.grey, size: 40),
+  );
 }
 
-// Version grille avec overlay
+// ─── CARTE GRILLE (library, search) ──────────────────────────────────────────
 class MangaGridCard extends StatelessWidget {
   final Manga manga;
   final VoidCallback onTap;
@@ -142,7 +163,7 @@ class MangaGridCard extends StatelessWidget {
             ),
           ),
 
-          // Status badge
+          // Badge statut
           if (manga.status != null)
             Positioned(
               top: AppSpacing.xs,
@@ -153,7 +174,7 @@ class MangaGridCard extends StatelessWidget {
                   vertical: 2,
                 ),
                 decoration: BoxDecoration(
-                  color: AppTheme.statusColor(manga.status).withOpacity(0.9),
+                  color: AppTheme.statusColor(manga.status).withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(AppRadius.small),
                 ),
                 child: Text(
@@ -167,22 +188,18 @@ class MangaGridCard extends StatelessWidget {
               ),
             ),
 
-          // Gradient + titre
+          // Dégradé + titre
           Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
+            bottom: 0, left: 0, right: 0,
             child: GestureDetector(
               onTap: onTap,
               child: Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.85),
-                    ],
+                    colors: [Colors.transparent, Colors.black87],
+                    stops: [0.3, 1.0],
                   ),
                 ),
                 padding: const EdgeInsets.all(AppSpacing.sm),
@@ -194,6 +211,7 @@ class MangaGridCard extends StatelessWidget {
                     color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
+                    height: 1.3,
                   ),
                 ),
               ),
@@ -203,14 +221,13 @@ class MangaGridCard extends StatelessWidget {
           // Bouton suppression
           if (onDelete != null)
             Positioned(
-              top: AppSpacing.xs,
-              left: AppSpacing.xs,
+              top: AppSpacing.xs, left: AppSpacing.xs,
               child: GestureDetector(
                 onTap: onDelete,
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.85),
+                    color: Colors.red.withValues(alpha: 0.85),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.close, color: Colors.white, size: 14),

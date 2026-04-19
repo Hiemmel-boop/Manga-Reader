@@ -3,6 +3,16 @@ import '../../data/models/reading_history.dart';
 import '../../data/models/reading_progress.dart';
 import '../../data/repositories/reading_progress_repository.dart';
 
+// Progressions récentes pour la section "Continuer la lecture"
+final recentProgressProvider = FutureProvider<List<ReadingProgress>>((ref) async {
+  return ref.watch(readingProgressRepositoryProvider).getRecentProgress(limit: 6);
+});
+
+// Progression d'un manga spécifique
+final readingProgressProvider = FutureProvider.family<ReadingProgress?, String>((ref, mangaId) async {
+  return ref.watch(readingProgressRepositoryProvider).getProgress(mangaId);
+});
+
 // Historique persisté dans Isar
 final historyProvider = StateNotifierProvider<HistoryNotifier, List<ReadingHistory>>((ref) {
   return HistoryNotifier(ref.watch(readingProgressRepositoryProvider));
@@ -45,8 +55,3 @@ class HistoryNotifier extends StateNotifier<List<ReadingHistory>> {
     state = [];
   }
 }
-
-// Progression de lecture
-final readingProgressProvider = FutureProvider.family<ReadingProgress?, String>((ref, mangaId) async {
-  return ref.watch(readingProgressRepositoryProvider).getProgress(mangaId);
-});

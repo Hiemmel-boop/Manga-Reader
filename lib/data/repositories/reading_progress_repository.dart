@@ -59,6 +59,15 @@ class ReadingProgressRepository {
         .findFirst();
   }
 
+  // Récupère les N dernières progressions (pour "Continuer la lecture")
+  Future<List<ReadingProgress>> getRecentProgress({int limit = 6}) async {
+    return _isar.readingProgress
+        .where()
+        .sortByUpdatedAtDesc()
+        .limit(limit)
+        .findAll();
+  }
+
   Future<void> deleteProgress(String mangaId) async {
     final existing = await _isar.readingProgress
         .filter()

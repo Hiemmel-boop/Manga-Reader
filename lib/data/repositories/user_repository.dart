@@ -3,7 +3,6 @@ import 'package:isar/isar.dart';
 import '../local/database.dart';
 import '../local/preferences.dart';
 import '../models/user.dart';
-import '../../core/logger.dart';
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {
   return UserRepository(
