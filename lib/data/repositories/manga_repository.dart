@@ -1,16 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../local/database.dart';
 import '../remote/mangadex_api.dart';
 import '../models/manga.dart';
 import '../../core/logger.dart';
 
 final mangaRepositoryProvider = Provider<MangaRepository>((ref) {
-  return MangaRepository(ref.watch(mangaDexApiProvider));
+  return MangaRepository(ref.watch(mangaDexApiProvider), DatabaseHelper());
 });
 
 class MangaRepository {
   final MangaDexApi _api;
+  final DatabaseHelper _db;
 
-  MangaRepository(this._api);
+  MangaRepository(this._api, this._db);
 
   // ─── API ───────────────────────────────────────────────
 
@@ -47,10 +49,58 @@ class MangaRepository {
     }
   }
 
-  // ─── BIBLIOTHÈQUE (Placeholder vide) ────────────────────
+  // ─── BIBLIOTHÈQUE (Sqflite) ────────────────────────────
 
-  Future<List<Manga>> getLibrary() async => [];
-  Future<void> addToLibrary(Manga manga) async {}
-  Future<void> removeFromLibrary(String mangadexId) async {}
-  Future<bool> isInLibrary(String mangadexId) async => false;
+  Future<List<Manga>> getLibrary() async {
+    return await _db.getFavoriteMangas();
+  }
+
+  Future<void> addToLibrary(Manga manga) async {
+    try {
+      var localManga = await _db.getMangaByMangadexId(manga.mangadexId);
+
+      if (localManga != null) {
+        localManga
+          ..isInLibrary = true
+          ..addedToLibraryAt = DateTime.now()
+          ..title = manga.title
+          ..coverUrl = manga.coverUrl
+          ..author = manga.author;
+        await _db.updateManga(localManga);
+      } else {
+        final newManga = Manga()
+          ..mangadexId = manga.mangadexId
+          ..title = manga.title
+          ..coverUrl = manga.coverUrl
+          ..author = manga.author
+          ..description = manga.description
+          ..status = manga.status
+          ..isInLibrary = true
+          ..addedToLibraryAt = DateTime.now()
+          ..tags = manga.tags;
+        await _db.insertManga(newManga);
+      }
+    } catch (e) {
+      appLogger.e('addToLibrary', error: e);
+    }
+  }
+
+  Future<void> removeFromLibrary(String mangadexId) async {
+    try {
+      var localManga = await _db.getMangaByMangadexId(mangadexId);
+      if (localManga != null) {
+        localManga
+          ..isInLibrary = false
+          ..addedToLibraryAt = null;
+        await _db.updateManga(localManga);
+      }
+    } catch (e) {
+      appLogger.e('removeFromLibrary', error: e);
+    }
+  }
+
+  Future<bool> isInLibrary(String mangadexId) async {
+    var localManga = await _db.getMangaByMangadexId(mangadexId);
+    return localManga?.isInLibrary ?? false;
+  }
 }

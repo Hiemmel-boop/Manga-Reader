@@ -1,18 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:flutter/foundation.dart';
 import 'config/routes.dart';
 import 'config/theme.dart';
-import 'presentation/providers/theme_provider.dart';
+import 'presentation/providers/theme_provider.dart'; // LIGNE MANQUANTE AJOUTÉE ICI
 import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialiser les notifications (no-op sur Linux/Web)
-  //await NotificationService().initialize();
+  // Initialisation de Sqflite pour Linux/Windows
+  if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.linux || defaultTargetPlatform == TargetPlatform.windows)) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
 
-  // Plus d'initialisation Isar, on lance juste l'app !
+  // Initialiser les notifications (Mode fantôme)
+  await NotificationService().initialize();
+
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -28,7 +35,6 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // Vérification au démarrage
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkIfNeeded();
     });
@@ -42,7 +48,6 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Re-vérifier quand l'app revient au premier plan
     if (state == AppLifecycleState.resumed) {
       _checkIfNeeded();
     }
@@ -62,7 +67,6 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
       }
 
       if (shouldCheck) {
-        // On récupère le container via le context du widget
         final container = ProviderScope.containerOf(context);
         await ref.read(notificationServiceProvider).checkNewChapters(container);
       }

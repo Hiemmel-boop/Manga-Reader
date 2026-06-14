@@ -1,10 +1,6 @@
-
 class Manga {
   String id = '';
-
-
   late String mangadexId;
-
   late String title;
   String? description;
   String? coverUrl;
@@ -28,7 +24,7 @@ class Manga {
 
   Manga();
 
-  // Factory depuis JSON MangaDex — parsing centralisé ici
+  // Factory depuis JSON MangaDex
   factory Manga.fromMangaDexJson(Map<String, dynamic> json) {
     final attributes = json['attributes'] as Map<String, dynamic>? ?? {};
     final relationships = json['relationships'] as List<dynamic>? ?? [];
@@ -74,8 +70,7 @@ class Manga {
       ..updatedAt = DateTime.now();
 
     if (coverFileName != null) {
-      manga.coverUrl =
-      'https://uploads.mangadex.org/covers/${json['id']}/$coverFileName';
+      manga.coverUrl = 'https://uploads.mangadex.org/covers/${json['id']}/$coverFileName';
     }
 
     if (authorName != null) manga.author = authorName;
@@ -83,4 +78,37 @@ class Manga {
 
     return manga;
   }
+
+  // ─── SQFLITE : Conversion pour la base de données ──────────────────────
+
+  Map<String, dynamic> toJson() => {
+    'mangadexId': mangadexId,
+    'title': title,
+    'description': description,
+    'coverUrl': coverUrl,
+    'author': author,
+    'artist': artist,
+    'status': status,
+    'contentRating': contentRating,
+    'tags': tags.join(','), // Les listes ne sont pas supportées en SQL, on les joint
+    'year': year,
+    'isInLibrary': isInLibrary ? 1 : 0, // Booléen -> Entier pour SQL
+    'addedToLibraryAt': addedToLibraryAt?.toIso8601String(),
+  };
+
+  factory Manga.fromJson(Map<String, dynamic> json) => Manga()
+    ..mangadexId = json['mangadexId'] as String? ?? ''
+    ..title = json['title'] as String? ?? 'Sans titre'
+    ..description = json['description'] as String?
+    ..coverUrl = json['coverUrl'] as String?
+    ..author = json['author'] as String?
+    ..artist = json['artist'] as String?
+    ..status = json['status'] as String?
+    ..contentRating = json['contentRating'] as String?
+    ..tags = (json['tags'] as String? ?? '').split(',').where((s) => s.isNotEmpty).toList()
+    ..year = json['year'] as int?
+    ..isInLibrary = (json['isInLibrary'] as int? ?? 0) == 1
+    ..addedToLibraryAt = json['addedToLibraryAt'] != null
+        ? DateTime.tryParse(json['addedToLibraryAt'])
+        : null;
 }
