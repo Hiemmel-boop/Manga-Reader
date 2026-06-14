@@ -1,12 +1,10 @@
-import 'package:isar/isar.dart';
 
-part 'reading_progress.g.dart';
 
-@collection
+
 class ReadingProgress {
-  Id id = Isar.autoIncrement;
+  String id = '';
 
-  @Index(unique: true)
+
   late String mangaId;
 
   late String chapterId;

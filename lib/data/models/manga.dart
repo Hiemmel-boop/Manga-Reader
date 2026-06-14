@@ -1,12 +1,8 @@
-import 'package:isar/isar.dart';
 
-part 'manga.g.dart';
-
-@collection
 class Manga {
-  Id id = Isar.autoIncrement;
+  String id = '';
 
-  @Index(unique: true)
+
   late String mangadexId;
 
   late String title;

@@ -3,27 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'config/routes.dart';
 import 'config/theme.dart';
-import 'data/local/database.dart';
 import 'presentation/providers/theme_provider.dart';
 import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialiser Isar une seule fois — injecté partout via override
-  final isar = await initIsar();
-
   // Initialiser les notifications (no-op sur Linux/Web)
-  await NotificationService().initialize();
+  //await NotificationService().initialize();
 
-  runApp(
-    ProviderScope(
-      overrides: [
-        isarProvider.overrideWithValue(isar),
-      ],
-      child: const MyApp(),
-    ),
-  );
+  // Plus d'initialisation Isar, on lance juste l'app !
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends ConsumerStatefulWidget {

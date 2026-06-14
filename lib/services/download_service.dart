@@ -3,10 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:dio/dio.dart';
-import 'package:isar/isar.dart';
 import '../core/logger.dart';
-import '../data/local/database.dart';
-import '../data/models/chapter.dart';
 import '../data/repositories/chapter_repository.dart';
 
 final downloadServiceProvider = Provider<DownloadService>((ref) {
@@ -53,8 +50,7 @@ StateNotifierProvider<DownloadStatesNotifier, Map<String, DownloadState>>(
       (ref) => DownloadStatesNotifier(),
 );
 
-class DownloadStatesNotifier
-    extends StateNotifier<Map<String, DownloadState>> {
+class DownloadStatesNotifier extends StateNotifier<Map<String, DownloadState>> {
   DownloadStatesNotifier() : super({});
 
   void start(DownloadState downloadState) {
@@ -175,24 +171,8 @@ class DownloadService {
         notifier.update(chapterId, (i + 1) / pages.length);
       }
 
-      // Sauvegarder les chemins locaux dans Isar
-      final isar = _ref.read(isarProvider);
-      final chapter = await isar.chapters
-          .filter()
-          .mangadexIdEqualTo(chapterId)
-          .findFirst();
-
-      if (chapter != null) {
-        final localPaths = List.generate(
-          pages.length,
-              (i) =>
-          '${chapterDir.path}/page_${i.toString().padLeft(3, '0')}.jpg',
-        );
-        await isar.writeTxn(() async {
-          chapter.pageUrls = localPaths;
-          await isar.chapters.put(chapter);
-        });
-      }
+      // TODO: Sauvegarder les chemins locaux avec Sqflite
+      // (Le téléchargement des images fonctionne, mais la BDD n'est pas mise à jour pour l'instant)
 
       notifier.complete(chapterId);
       appLogger.i('Téléchargement terminé : $chapterTitle');
@@ -211,19 +191,7 @@ class DownloadService {
         await chapterDir.delete(recursive: true);
       }
 
-      // Remettre les URLs en ligne dans Isar
-      final isar = _ref.read(isarProvider);
-      final chapter = await isar.chapters
-          .filter()
-          .mangadexIdEqualTo(chapterId)
-          .findFirst();
-
-      if (chapter != null) {
-        await isar.writeTxn(() async {
-          chapter.pageUrls = [];
-          await isar.chapters.put(chapter);
-        });
-      }
+      // TODO: Remettre les URLs en ligne avec Sqflite
 
       appLogger.i('Téléchargement supprimé : $chapterId');
     } catch (e) {

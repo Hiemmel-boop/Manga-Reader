@@ -1,6 +1,4 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/logger.dart';
 import '../data/repositories/manga_repository.dart';
@@ -11,75 +9,17 @@ final notificationServiceProvider = Provider<NotificationService>((ref) {
 });
 
 class NotificationService {
-  final _plugin = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
 
-  // Vérifier si les notifications sont supportées sur la plateforme
-  bool get _isSupported =>
-      !kIsWeb &&
-          defaultTargetPlatform != TargetPlatform.linux &&
-          defaultTargetPlatform != TargetPlatform.windows;
-
   Future<void> initialize() async {
-    if (!_isSupported) {
-      appLogger.i('Notifications non supportées sur cette plateforme');
-      return;
-    }
-    if (_initialized) return;
-
-    try {
-      const android = AndroidInitializationSettings('@mipmap/ic_launcher');
-      const ios = DarwinInitializationSettings(
-        requestAlertPermission: true,
-        requestBadgePermission: true,
-        requestSoundPermission: true,
-      );
-      await _plugin.initialize(
-        const InitializationSettings(android: android, iOS: ios),
-      );
-      _initialized = true;
-      appLogger.i('NotificationService initialisé');
-    } catch (e) {
-      appLogger.e('NotificationService init', error: e);
-    }
+    _initialized = true;
+    appLogger.i('NotificationService initialisé (Mode fantôme - pas de notifications physiques)');
   }
 
-  // ── Afficher une notification ──────────────────────────────────────────────
-
-  Future<void> showNewChapter({
-    required String mangaTitle,
-    required String chapterTitle,
-    required String mangaId,
-  }) async {
-    if (!_initialized) return;
-    try {
-      final details = NotificationDetails(
-        android: AndroidNotificationDetails(
-          'new_chapters',
-          'Nouveaux chapitres',
-          channelDescription: 'Notification quand un nouveau chapitre est disponible',
-          importance: Importance.high,
-          priority: Priority.high,
-          styleInformation: BigTextStyleInformation(
-            'Nouveau chapitre disponible : $chapterTitle',
-            contentTitle: mangaTitle,
-          ),
-        ),
-      );
-      await _plugin.show(
-        mangaId.hashCode.abs(),
-        mangaTitle,
-        'Nouveau : $chapterTitle',
-        details,
-      );
-    } catch (e) {
-      appLogger.e('showNewChapter', error: e);
-    }
-  }
-
-  // ── Vérifier les nouveaux chapitres (appelé une fois par jour) ─────────────
-
+  // Vérifier les nouveaux chapitres (la logique tourne en fond, mais n'affiche rien)
   Future<void> checkNewChapters(ProviderContainer container) async {
+    if (!_initialized) return;
+
     try {
       final mangaRepo = container.read(mangaRepositoryProvider);
       final chapterRepo = container.read(chapterRepositoryProvider);
@@ -101,14 +41,9 @@ class NotificationService {
           final current = lastChapter.chapterNumber;
 
           if (current != null) {
-            // Si on avait un chapitre enregistré et qu'il a changé → notifier
             if (lastKnown != null && lastKnown != current) {
-              await showNewChapter(
-                mangaTitle: manga.title,
-                chapterTitle: 'Chapitre $current',
-                mangaId: manga.mangadexId,
-              );
-              appLogger.i('Nouveau chapitre : ${manga.title} — Ch.$current');
+              // Normalement on affiche la notification ici, mais on se contente de logger
+              appLogger.i('NOUVEAU CHAPITRE TROUVÉ : ${manga.title} — Ch.$current');
             }
             await prefs.setString(key, current);
           }
@@ -124,6 +59,6 @@ class NotificationService {
   }
 
   Future<void> cancelAll() async {
-    if (_initialized) await _plugin.cancelAll();
+    // Rien à faire
   }
 }
