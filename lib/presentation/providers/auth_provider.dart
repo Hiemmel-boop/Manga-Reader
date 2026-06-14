@@ -1,102 +1,91 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/models/user.dart';
 import '../../data/repositories/user_repository.dart';
-import '../../core/logger.dart';
-
-// État d'authentification
-class AuthState {
-  final User? user;
-  final bool isGuest;
-  final bool isLoading;
-  final String? error;
-
-  const AuthState({
-    this.user,
-    this.isGuest = false,
-    this.isLoading = false,
-    this.error,
-  });
-
-  bool get isAuthenticated => user != null;
-  String get displayName => user?.username ?? (isGuest ? 'Invité' : '');
-
-  AuthState copyWith({
-    User? user,
-    bool? isGuest,
-    bool? isLoading,
-    String? error,
-    bool clearUser = false,
-    bool clearError = false,
-  }) {
-    return AuthState(
-      user: clearUser ? null : user ?? this.user,
-      isGuest: isGuest ?? this.isGuest,
-      isLoading: isLoading ?? this.isLoading,
-      error: clearError ? null : error ?? this.error,
-    );
-  }
-}
+import '../../data/models/user.dart';
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier(ref.watch(userRepositoryProvider));
 });
 
+class AuthState {
+  final User? user;
+  final bool isLoading;
+  final String? error;
+  final bool isGuest;
+
+  AuthState({this.user, this.isLoading = false, this.error, this.isGuest = false});
+
+  AuthState copyWith({User? user, bool? isLoading, String? error, bool? isGuest}) {
+    return AuthState(
+      user: user ?? this.user,
+      isLoading: isLoading ?? this.isLoading,
+      error: error,
+      isGuest: isGuest ?? this.isGuest,
+    );
+  }
+
+  bool get isAuthenticated => user != null;
+  String get displayName => user?.username ?? 'Invité';
+}
+
 class AuthNotifier extends StateNotifier<AuthState> {
   final UserRepository _repo;
 
-  AuthNotifier(this._repo) : super(const AuthState()) {
-    _restoreSession();
-  }
+  AuthNotifier(this._repo) : super(AuthState());
 
-  Future<void> _restoreSession() async {
+  Future<bool> login(String username, String password) async {
+    state = state.copyWith(isLoading: true, error: null);
     try {
-      final user = await _repo.getCurrentUser();
+      // On utilise username comme email pour Supabase
+      final user = await _repo.login(email: username, password: password);
       if (user != null) {
-        state = AuthState(user: user);
+        state = state.copyWith(user: user, isLoading: false, isGuest: false);
+        return true; // Succès !
+      } else {
+        state = state.copyWith(error: 'Utilisateur non trouvé', isLoading: false);
+        return false;
       }
     } catch (e) {
-      appLogger.e('_restoreSession', error: e);
+      state = state.copyWith(error: e.toString(), isLoading: false);
+      return false;
     }
   }
 
   Future<bool> register(String username, String email, String password) async {
-    state = state.copyWith(isLoading: true, clearError: true);
+    state = state.copyWith(isLoading: true, error: null);
     try {
-      final user = await _repo.register(
-        username: username,
-        email: email,
-        password: password,
-      );
-      state = AuthState(user: user);
-      return true;
+      final user = await _repo.register(email: email, password: password, username: username);
+      if (user != null) {
+        state = state.copyWith(user: user, isLoading: false, isGuest: false);
+        return true; // Succès !
+      } else {
+        state = state.copyWith(error: 'Erreur lors de l\'inscription', isLoading: false);
+        return false;
+      }
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString().replaceAll('Exception: ', ''));
+      state = state.copyWith(error: e.toString(), isLoading: false);
       return false;
     }
-  }
-
-  Future<bool> login(String username, String password) async {
-    state = state.copyWith(isLoading: true, clearError: true);
-    try {
-      final user = await _repo.login(username: username, password: password);
-      state = AuthState(user: user);
-      return true;
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString().replaceAll('Exception: ', ''));
-      return false;
-    }
-  }
-
-  void continueAsGuest() {
-    state = const AuthState(isGuest: true);
   }
 
   Future<void> logout() async {
     await _repo.logout();
-    state = const AuthState();
+    state = state.copyWith(user: null, isGuest: false);
+  }
+
+  Future<void> checkLogin() async {
+    final user = await _repo.getCurrentUser();
+    if (user != null) {
+      state = state.copyWith(user: user, isGuest: false);
+    } else {
+      state = state.copyWith(user: null);
+    }
   }
 
   void clearError() {
-    state = state.copyWith(clearError: true);
+    state = state.copyWith(error: null);
+  }
+
+  void continueAsGuest() {
+    state = state.copyWith(isGuest: true);
   }
 }

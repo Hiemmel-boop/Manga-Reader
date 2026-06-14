@@ -3,23 +3,31 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'; // NOUVEL IMPORT
 import 'config/routes.dart';
 import 'config/theme.dart';
-import 'presentation/providers/theme_provider.dart'; // LIGNE MANQUANTE AJOUTÉE ICI
+import 'presentation/providers/theme_provider.dart';
 import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialisation de Sqflite pour Linux/Windows
+  // 1. Initialisation de Sqflite pour Linux/Windows
   if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.linux || defaultTargetPlatform == TargetPlatform.windows)) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
 
-  // Initialiser les notifications (Mode fantôme)
+  // 2. Initialisation de Supabase (C'EST ICI QU'ON MET LES CLES)
+  await Supabase.initialize(
+    url: 'https://shhggnwktpymghxtklcq.supabase.co', // Ex: https://xyzabc.supabase.co
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaGdnbndrdHB5bWdoeHRrbGNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NDI1NjAsImV4cCI6MjA5NzAxODU2MH0._vCA2e5W13XD9ruyPTykfZK0U7vZFMCJeeWrX8lGWhM', // La très longue clé qui commence par eyJ...
+  );
+
+  // 3. Initialiser les notifications (Mode fantôme)
   await NotificationService().initialize();
 
+  // 4. Lancement de l'application
   runApp(const ProviderScope(child: MyApp()));
 }
 
