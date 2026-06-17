@@ -84,16 +84,15 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
-    final themeMode = ref.watch(themeProvider);
+    final theme = ref.watch(themeProvider); // On récupère le ThemeData directement
 
     return MaterialApp.router(
       title: 'Manga Reader',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: themeMode,
+      theme: theme, // On applique le thème choisi (Sombre, Dracula, etc.)
       routerConfig: router,
     );
   }

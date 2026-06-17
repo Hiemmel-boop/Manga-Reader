@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 import '../providers/theme_provider.dart';
+import '../providers/chapter_provider.dart';
 import '../../config/theme.dart';
 import '../../config/constants.dart';
 import '../../data/local/preferences.dart';
@@ -13,8 +14,7 @@ class SettingsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == ThemeMode.dark;
+    final currentTheme = ref.watch(themeProvider.notifier).currentThemeName;
     final readerTheme = ref.watch(readerThemeProvider);
     final readerPrefs = ref.watch(readerPreferencesProvider);
 
@@ -26,12 +26,12 @@ class SettingsPage extends ConsumerWidget {
       body: ListView(
         children: [
           _Section(label: 'Apparence'),
-          SwitchListTile(
-            secondary: Icon(isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded, color: AppColors.primary),
-            title: const Text('Mode sombre'),
-            subtitle: Text(isDark ? 'Activé' : 'Désactivé'),
-            value: isDark,
-            onChanged: (_) => ref.read(themeProvider.notifier).toggle(),
+          ListTile(
+            leading: const Icon(Icons.palette_outlined, color: AppColors.primary),
+            title: const Text('Thème de l\'application'),
+            subtitle: Text(_appThemeLabel(currentTheme)),
+            trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+            onTap: () => _showAppThemeDialog(context, ref, currentTheme),
           ),
           const Divider(),
 
@@ -44,7 +44,7 @@ class SettingsPage extends ConsumerWidget {
             onChanged: (_) => ref.read(readerPreferencesProvider.notifier).toggleDirection(),
           ),
           ListTile(
-            leading: const Icon(Icons.palette_outlined, color: AppColors.primary),
+            leading: const Icon(Icons.color_lens_outlined, color: AppColors.primary),
             title: const Text('Thème du lecteur'),
             subtitle: Text(_readerThemeLabel(readerTheme)),
             trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
@@ -60,9 +60,9 @@ class SettingsPage extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.logout_rounded, color: Colors.orange),
             title: const Text('Déconnexion'),
-            onTap: () {
-              ref.read(authProvider.notifier).logout();
-              context.go('/auth');
+            onTap: () async {
+              await ref.read(authProvider.notifier).logout();
+              if (context.mounted) context.go('/auth');
             },
           ),
           const Divider(),
@@ -87,6 +87,15 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
+  String _appThemeLabel(String theme) {
+    return switch (theme) {
+      AppConstants.themeLight => 'Clair',
+      AppConstants.themeDracula => 'Dracula',
+      AppConstants.themeAyuDark => 'Ayu Dark',
+      _ => 'Sombre',
+    };
+  }
+
   String _readerThemeLabel(String theme) {
     return switch (theme) {
       AppConstants.readerThemeLight => 'Clair',
@@ -95,15 +104,30 @@ class SettingsPage extends ConsumerWidget {
     };
   }
 
+  void _showAppThemeDialog(BuildContext context, WidgetRef ref, String current) {
+    showDialog(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: const Text('Thème de l\'application'),
+        children: [
+          _ThemeOption(label: 'Sombre', color: AppColors.primary, value: AppConstants.themeDark, current: current, ref: ref, ctx: ctx),
+          _ThemeOption(label: 'Clair', color: Colors.blueGrey, value: AppConstants.themeLight, current: current, ref: ref, ctx: ctx),
+          _ThemeOption(label: 'Dracula', color: const Color(0xFFBD93F9), value: AppConstants.themeDracula, current: current, ref: ref, ctx: ctx),
+          _ThemeOption(label: 'Ayu Dark', color: const Color(0xFFFFB454), value: AppConstants.themeAyuDark, current: current, ref: ref, ctx: ctx),
+        ],
+      ),
+    );
+  }
+
   void _showReaderThemeDialog(BuildContext context, WidgetRef ref, String current) {
     showDialog(
       context: context,
       builder: (ctx) => SimpleDialog(
         title: const Text('Thème du lecteur'),
         children: [
-          _ThemeOption(label: 'Sombre', value: AppConstants.readerThemeDark, current: current, ref: ref, ctx: ctx),
-          _ThemeOption(label: 'Sépia', value: AppConstants.readerThemeSepia, current: current, ref: ref, ctx: ctx),
-          _ThemeOption(label: 'Clair', value: AppConstants.readerThemeLight, current: current, ref: ref, ctx: ctx),
+          _ThemeOption(label: 'Sombre', color: Colors.black, value: AppConstants.readerThemeDark, current: current, ref: ref, ctx: ctx),
+          _ThemeOption(label: 'Sépia', color: AppColors.sepiaBg, value: AppConstants.readerThemeSepia, current: current, ref: ref, ctx: ctx),
+          _ThemeOption(label: 'Clair', color: Colors.white, value: AppConstants.readerThemeLight, current: current, ref: ref, ctx: ctx),
         ],
       ),
     );
@@ -117,10 +141,7 @@ class SettingsPage extends ConsumerWidget {
         content: const Text('Voulez-vous vraiment quitter l\'application ?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
-          TextButton(
-            onPressed: () => exit(0),
-            child: const Text('Quitter', style: TextStyle(color: AppColors.error)),
-          ),
+          TextButton(onPressed: () => exit(0), child: const Text('Quitter', style: TextStyle(color: AppColors.error))),
         ],
       ),
     );
@@ -142,25 +163,34 @@ class _Section extends StatelessWidget {
 
 class _ThemeOption extends StatelessWidget {
   final String label;
+  final Color color;
   final String value;
   final String current;
   final WidgetRef ref;
   final BuildContext ctx;
 
-  const _ThemeOption({required this.label, required this.value, required this.current, required this.ref, required this.ctx});
+  const _ThemeOption({required this.label, required this.color, required this.value, required this.current, required this.ref, required this.ctx});
 
   @override
   Widget build(BuildContext context) {
+    // On vérifie si c'est le thème de l'app ou du lecteur pour appeler la bonne fonction
+    final isAppTheme = [AppConstants.themeDark, AppConstants.themeLight, AppConstants.themeDracula, AppConstants.themeAyuDark].contains(value);
+
     return SimpleDialogOption(
       onPressed: () {
-        ref.read(readerThemeProvider.notifier).setTheme(value);
+        if (isAppTheme) {
+          ref.read(themeProvider.notifier).setTheme(value);
+        } else {
+          ref.read(readerThemeProvider.notifier).setTheme(value);
+        }
         Navigator.pop(ctx);
       },
       child: Row(
         children: [
-          Icon(current == value ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-              color: current == value ? AppColors.primary : Colors.grey),
+          Icon(current == value ? Icons.radio_button_checked : Icons.radio_button_unchecked, color: current == value ? AppColors.primary : Colors.grey),
           const SizedBox(width: AppSpacing.md),
+          CircleAvatar(backgroundColor: color, radius: 8),
+          const SizedBox(width: AppSpacing.sm),
           Text(label),
         ],
       ),
@@ -178,8 +208,7 @@ class _LanguageTile extends ConsumerWidget {
       future: ref.read(preferencesProvider).getDefaultLanguage(),
       builder: (_, snap) {
         final lang = snap.data ?? 'fr';
-        final label = AppConstants.availableLanguages
-            .firstWhere((l) => l['code'] == lang, orElse: () => {'label': lang})['label']!;
+        final label = AppConstants.availableLanguages.firstWhere((l) => l['code'] == lang, orElse: () => {'label': lang})['label']!;
 
         return ListTile(
           leading: const Icon(Icons.language_rounded, color: AppColors.primary),
@@ -200,14 +229,13 @@ class _LanguageTile extends ConsumerWidget {
         children: AppConstants.availableLanguages.map((lang) => SimpleDialogOption(
           onPressed: () async {
             await ref.read(preferencesProvider).setDefaultLanguage(lang['code']!);
-            Navigator.pop(ctx);
+            // TRÈS IMPORTANT : On invalide les chapitres pour qu'ils rechargent dans la nouvelle langue !
+            ref.invalidate(mangaChaptersProvider);
+            if (ctx.mounted) Navigator.pop(ctx);
           },
           child: Row(
             children: [
-              Icon(
-                current == lang['code'] ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                color: current == lang['code'] ? AppColors.primary : Colors.grey,
-              ),
+              Icon(current == lang['code'] ? Icons.radio_button_checked : Icons.radio_button_unchecked, color: current == lang['code'] ? AppColors.primary : Colors.grey),
               const SizedBox(width: AppSpacing.md),
               Text(lang['label']!),
             ],

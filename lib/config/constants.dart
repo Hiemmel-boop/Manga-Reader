@@ -19,7 +19,7 @@ class AppConstants {
   static const String dbName = 'manga_reader_db';
 
   // Préférences
-  static const String prefDarkMode = 'dark_mode';
+  static const String prefAppTheme = 'app_theme'; // NOUVEAU : remplace prefDarkMode
   static const String prefVerticalReader = 'vertical_reader';
   static const String prefReaderZoom = 'reader_zoom';
   static const String prefDefaultLanguage = 'default_language';
@@ -36,6 +36,12 @@ class AppConstants {
     {'code': 'ko', 'label': '한국어'},
     {'code': 'zh', 'label': '中文'},
   ];
+
+  // Thèmes de l'application (NOUVEAU)
+  static const String themeDark = 'dark';
+  static const String themeLight = 'light';
+  static const String themeDracula = 'dracula';
+  static const String themeAyuDark = 'ayu_dark';
 
   // Thèmes lecteur
   static const String readerThemeDark = 'dark';

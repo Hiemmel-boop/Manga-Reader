@@ -71,8 +71,10 @@ class MangaDexApi {
     final params = <String, dynamic>{
       'limit': limit,
       'offset': offset,
-      'order[chapter]': 'asc',
+      'order[volume]': 'desc',
+      'order[chapter]': 'desc',
       'includes[]': ['scanlation_group'],
+      'contentRating[]': ['safe', 'suggestive', 'erotica', 'pornographic'],
     };
 
     if (language != null) {

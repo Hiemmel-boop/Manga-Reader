@@ -15,15 +15,15 @@ class Preferences {
     _prefs ??= await SharedPreferences.getInstance();
   }
 
-  // Thème
-  Future<bool> getDarkMode() async {
+  // Thème de l'application (MODIFIÉ)
+  Future<String> getThemeName() async {
     await init();
-    return _prefs?.getBool(AppConstants.prefDarkMode) ?? true;
+    return _prefs?.getString(AppConstants.prefAppTheme) ?? AppConstants.themeDark;
   }
 
-  Future<void> setDarkMode(bool value) async {
+  Future<void> setThemeName(String value) async {
     await init();
-    await _prefs?.setBool(AppConstants.prefDarkMode, value);
+    await _prefs?.setString(AppConstants.prefAppTheme, value);
   }
 
   // Lecteur

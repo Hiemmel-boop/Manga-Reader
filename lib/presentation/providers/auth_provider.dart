@@ -12,9 +12,19 @@ class AuthState {
   final String? error;
   final bool isGuest;
 
-  AuthState({this.user, this.isLoading = false, this.error, this.isGuest = false});
+  AuthState({
+    this.user,
+    this.isLoading = false,
+    this.error,
+    this.isGuest = false,
+  });
 
-  AuthState copyWith({User? user, bool? isLoading, String? error, bool? isGuest}) {
+  AuthState copyWith({
+    User? user,
+    bool? isLoading,
+    String? error,
+    bool? isGuest,
+  }) {
     return AuthState(
       user: user ?? this.user,
       isLoading: isLoading ?? this.isLoading,
@@ -73,11 +83,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> checkLogin() async {
-    final user = await _repo.getCurrentUser();
-    if (user != null) {
-      state = state.copyWith(user: user, isGuest: false);
-    } else {
-      state = state.copyWith(user: null);
+    try {
+      final user = await _repo.getCurrentUser();
+      if (user != null) {
+        state = state.copyWith(user: user, isGuest: false, isLoading: false);
+      } else {
+        // On ne met à jour l'état que si on était connecté avant, pour éviter des rebuilds inutiles
+        if (state.user != null) {
+          state = state.copyWith(user: null);
+        }
+      }
+    } catch (e) {
+      // En cas d'erreur réseau ou autre, on s'assure de ne pas rester bloqué
+      if (state.user != null) {
+        state = state.copyWith(user: null);
+      }
     }
   }
 

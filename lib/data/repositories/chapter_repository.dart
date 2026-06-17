@@ -17,40 +17,49 @@ class ChapterRepository {
 
   ChapterRepository(this._api, this._prefs);
 
-  Future<List<Chapter>> getMangaChapters(String mangaId) async {
+  Future<List<Chapter>> getMangaChapters(
+      String mangaId, {
+        int limit = 100,
+        int offset = 0,
+      }) async {
     try {
-      final language = await _prefs.getDefaultLanguage();
-      final response = await _api.getMangaChapters(mangaId, language: language);
-      final List<dynamic> data = response.data['data'] ?? [];
+      String? language = await _prefs.getDefaultLanguage();
+      appLogger.i('Langue demandée par l\'app : $language');
 
-      List<Chapter> chapters = data.map((json) => Chapter.fromMangaDexJson(json, mangaId)).toList();
-      chapters.removeWhere((c) => c.chapterNumber == null || c.chapterNumber!.isEmpty);
-
-      final Map<String, Chapter> uniqueChapters = {};
-      for (final chapter in chapters) {
-        final key = chapter.chapterNumber!;
-        if (uniqueChapters.containsKey(key)) {
-          final existing = uniqueChapters[key]!;
-          if (chapter.publishAt != null && existing.publishAt != null) {
-            if (chapter.publishAt!.isAfter(existing.publishAt!)) {
-              uniqueChapters[key] = chapter;
-            }
-          }
-        } else {
-          uniqueChapters[key] = chapter;
-        }
+      // Si la langue est nulle ou vide, on force à null pour que l'API renvoie FR et EN
+      if (language == null || language.isEmpty) {
+        language = null;
       }
 
-      final result = uniqueChapters.values.toList()
-        ..sort((a, b) {
-          final numA = double.tryParse(a.chapterNumber ?? '0') ?? 0;
-          final numB = double.tryParse(b.chapterNumber ?? '0') ?? 0;
-          return numA.compareTo(numB);
-        });
+      final response = await _api.getMangaChapters(
+        mangaId,
+        limit: limit,
+        offset: offset,
+        language: language,
+      );
 
-      return result;
+      final List<dynamic> data = response.data['data'] ?? [];
+      appLogger.i('MangaDex a renvoyé ${data.length} chapitres bruts pour le manga $mangaId');
+
+      // --- SYSTÈME DE SECOURS ---
+      // Si on a 0 chapitre dans la langue demandée (ex: Solo Leveling en FR), on réessaie en Anglais !
+      if (data.isEmpty && language != null) {
+        appLogger.i('Pas de chapitre en $language, réessai en anglais...');
+        final responseEn = await _api.getMangaChapters(
+          mangaId,
+          limit: limit,
+          offset: offset,
+          language: 'en',
+        );
+        final List<dynamic> dataEn = responseEn.data['data'] ?? [];
+        appLogger.i('MangaDex a renvoyé ${dataEn.length} chapitres en anglais');
+        return dataEn.map((json) => Chapter.fromMangaDexJson(json, mangaId)).toList();
+      }
+
+      return data.map((json) => Chapter.fromMangaDexJson(json, mangaId)).toList();
+
     } catch (e) {
-      appLogger.e('getMangaChapters', error: e);
+      appLogger.e('Erreur getMangaChapters', error: e);
       throw Exception('Impossible de charger les chapitres');
     }
   }

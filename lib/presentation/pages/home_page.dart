@@ -21,176 +21,179 @@ class HomePage extends ConsumerWidget {
     final auth = ref.watch(authProvider);
     final recentProgressAsync = ref.watch(recentProgressProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Manga Reader'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search_rounded),
-            onPressed: () => context.go('/search'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.person_rounded),
-            onPressed: () => context.go('/profile'),
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          ref.invalidate(popularMangaProvider);
-          ref.invalidate(recentProgressProvider);
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+    return PopScope(
+      canPop: false, // Empêche le bouton retour de fermer l'app
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Manga Reader'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.search_rounded),
+              onPressed: () => context.push('/search'), // Changé en push
+            ),
+            IconButton(
+              icon: const Icon(Icons.person_rounded),
+              onPressed: () => context.push('/profile'), // Changé en push
+            ),
+          ],
+        ),
+        body: RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(popularMangaProvider);
+            ref.invalidate(recentProgressProvider);
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
 
-              // ── Bannière de bienvenue ────────────────────────────
-              _WelcomeBanner(name: auth.displayName),
+                // ── Bannière de bienvenue ────────────────────────────
+                _WelcomeBanner(name: auth.displayName),
 
-              // ── Continuer la lecture ─────────────────────────────
-              recentProgressAsync.when(
-                data: (progressList) {
-                  if (progressList.isEmpty) return const SizedBox.shrink();
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _SectionTitle(
-                        title: 'Continuer la lecture',
-                        icon: Icons.play_circle_outline_rounded,
-                        onMore: () => context.go('/history'),
-                      ),
-                      SizedBox(
-                        height: 110,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.md,
-                          ),
-                          itemCount: progressList.length,
-                          itemBuilder: (_, i) => Padding(
-                            padding: const EdgeInsets.only(right: AppSpacing.md),
-                            child: _ContinueReadingCard(
-                              progress: progressList[i],
-                              onTap: () {
-                                final p = progressList[i];
-                                final params = {
-                                  'mangaId': p.mangaId,
-                                  'mangaTitle': p.mangaTitle,
-                                  if (p.mangaCoverUrl != null)
-                                    'mangaCoverUrl': p.mangaCoverUrl!,
-                                  if (p.chapterTitle != null)
-                                    'chapterTitle': p.chapterTitle!,
-                                };
-                                final query = params.entries
-                                    .map((e) =>
-                                '${e.key}=${Uri.encodeComponent(e.value)}')
-                                    .join('&');
-                                context.go('/reader/${p.chapterId}?$query');
-                              },
+                // ── Continuer la lecture ─────────────────────────────
+                recentProgressAsync.when(
+                  data: (progressList) {
+                    if (progressList.isEmpty) return const SizedBox.shrink();
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _SectionTitle(
+                          title: 'Continuer la lecture',
+                          icon: Icons.play_circle_outline_rounded,
+                          onMore: () => context.push('/history'), // Changé en push
+                        ),
+                        SizedBox(
+                          height: 110,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md,
+                            ),
+                            itemCount: progressList.length,
+                            itemBuilder: (_, i) => Padding(
+                              padding: const EdgeInsets.only(right: AppSpacing.md),
+                              child: _ContinueReadingCard(
+                                progress: progressList[i],
+                                onTap: () {
+                                  final p = progressList[i];
+                                  final params = {
+                                    'mangaId': p.mangaId,
+                                    'mangaTitle': p.mangaTitle,
+                                    if (p.mangaCoverUrl != null)
+                                      'mangaCoverUrl': p.mangaCoverUrl!,
+                                    if (p.chapterTitle != null)
+                                      'chapterTitle': p.chapterTitle!,
+                                  };
+                                  final query = params.entries
+                                      .map((e) =>
+                                  '${e.key}=${Uri.encodeComponent(e.value)}')
+                                      .join('&');
+                                  context.push('/reader/${p.chapterId}?$query'); // Changé en push
+                                },
+                              ),
                             ),
                           ),
                         ),
+                        const SizedBox(height: AppSpacing.sm),
+                      ],
+                    );
+                  },
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, __) => const SizedBox.shrink(),
+                ),
+
+                // ── Ma Bibliothèque ──────────────────────────────────
+                if (library.isNotEmpty) ...[
+                  _SectionTitle(
+                    title: 'Ma Bibliothèque',
+                    onMore: () => context.push('/library'), // Changé en push
+                  ),
+                  SizedBox(
+                    height: 170,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
                       ),
-                      const SizedBox(height: AppSpacing.sm),
+                      itemCount: library.take(10).length,
+                      itemBuilder: (_, i) => Padding(
+                        padding: const EdgeInsets.only(right: AppSpacing.md),
+                        child: MangaCard(
+                          manga: library[i],
+                          width: 120,
+                          height: 170,
+                          onTap: () =>
+                              context.push('/manga/${library[i].mangadexId}'), // Changé en push
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                ],
+
+                // ── Populaires ───────────────────────────────────────
+                const _SectionTitle(title: 'Populaires'),
+                popularAsync.when(
+                  data: (mangas) => SizedBox(
+                    height: 210,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                      ),
+                      itemCount: mangas.length,
+                      itemBuilder: (_, i) => Padding(
+                        padding: const EdgeInsets.only(right: AppSpacing.md),
+                        child: MangaCard(
+                          manga: mangas[i],
+                          width: 140,
+                          height: 210,
+                          onTap: () =>
+                              context.push('/manga/${mangas[i].mangadexId}'), // Changé en push
+                        ),
+                      ),
+                    ),
+                  ),
+                  loading: () => _ShimmerList(height: 210),
+                  error: (e, _) => Padding(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    child: Text(
+                      'Erreur de chargement',
+                      style: TextStyle(color: Colors.grey[500]),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: AppSpacing.xl),
+
+                // ── Navigation rapide ────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _NavButton(
+                        icon: Icons.library_books_rounded,
+                        label: 'Bibliothèque',
+                        onTap: () => context.push('/library'), // Changé en push
+                      ),
+                      _NavButton(
+                        icon: Icons.history_rounded,
+                        label: 'Historique',
+                        onTap: () => context.push('/history'), // Changé en push
+                      ),
+                      _NavButton(
+                        icon: Icons.settings_rounded,
+                        label: 'Paramètres',
+                        onTap: () => context.push('/settings'), // Changé en push
+                      ),
                     ],
-                  );
-                },
-                loading: () => const SizedBox.shrink(),
-                error: (_, __) => const SizedBox.shrink(),
-              ),
-
-              // ── Ma Bibliothèque ──────────────────────────────────
-              if (library.isNotEmpty) ...[
-                _SectionTitle(
-                  title: 'Ma Bibliothèque',
-                  onMore: () => context.go('/library'),
-                ),
-                SizedBox(
-                  height: 170,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                    ),
-                    itemCount: library.take(10).length,
-                    itemBuilder: (_, i) => Padding(
-                      padding: const EdgeInsets.only(right: AppSpacing.md),
-                      child: MangaCard(
-                        manga: library[i],
-                        width: 120,
-                        height: 170,
-                        onTap: () =>
-                            context.go('/manga/${library[i].mangadexId}'),
-                      ),
-                    ),
                   ),
                 ),
-                const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.xl),
               ],
-
-              // ── Populaires ───────────────────────────────────────
-              const _SectionTitle(title: 'Populaires'),
-              popularAsync.when(
-                data: (mangas) => SizedBox(
-                  height: 210,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                    ),
-                    itemCount: mangas.length,
-                    itemBuilder: (_, i) => Padding(
-                      padding: const EdgeInsets.only(right: AppSpacing.md),
-                      child: MangaCard(
-                        manga: mangas[i],
-                        width: 140,
-                        height: 210,
-                        onTap: () =>
-                            context.go('/manga/${mangas[i].mangadexId}'),
-                      ),
-                    ),
-                  ),
-                ),
-                loading: () => _ShimmerList(height: 210),
-                error: (e, _) => Padding(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  child: Text(
-                    'Erreur de chargement',
-                    style: TextStyle(color: Colors.grey[500]),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: AppSpacing.xl),
-
-              // ── Navigation rapide ────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _NavButton(
-                      icon: Icons.library_books_rounded,
-                      label: 'Bibliothèque',
-                      onTap: () => context.go('/library'),
-                    ),
-                    _NavButton(
-                      icon: Icons.history_rounded,
-                      label: 'Historique',
-                      onTap: () => context.go('/history'),
-                    ),
-                    _NavButton(
-                      icon: Icons.settings_rounded,
-                      label: 'Paramètres',
-                      onTap: () => context.go('/settings'),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xl),
-            ],
+            ),
           ),
         ),
       ),

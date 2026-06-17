@@ -35,7 +35,12 @@ class _SplashPageState extends ConsumerState<SplashPage>
 
     _controller.forward();
 
-    Future.delayed(const Duration(milliseconds: 2400), () {
+    Future.delayed(const Duration(milliseconds: 2400), () async {
+      if (!mounted) return;
+
+      // ON AJOUTE LA VÉRIFICATION DE SESSION ICI !
+      await ref.read(authProvider.notifier).checkLogin();
+
       if (!mounted) return;
       final auth = ref.read(authProvider);
       context.go(auth.isAuthenticated || auth.isGuest ? '/' : '/auth');

@@ -12,22 +12,48 @@ import '../../config/theme.dart';
 import '../../config/constants.dart';
 import '../../services/download_service.dart';
 
-class MangaDetailPage extends ConsumerWidget {
+class MangaDetailPage extends ConsumerStatefulWidget {
   final String mangaId;
   const MangaDetailPage({super.key, required this.mangaId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final mangaAsync = ref.watch(mangaDetailProvider(mangaId));
-    final chaptersAsync = ref.watch(mangaChaptersProvider(mangaId));
-    final isInLibrary = ref.watch(isMangaInLibraryProvider(mangaId));
-    final progressAsync = ref.watch(readingProgressProvider(mangaId));
+  ConsumerState<MangaDetailPage> createState() => _MangaDetailPageState();
+}
+
+class _MangaDetailPageState extends ConsumerState<MangaDetailPage> {
+  late ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 300) {
+        ref.read(mangaChaptersProvider(widget.mangaId).notifier).fetchMoreChapters();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final mangaAsync = ref.watch(mangaDetailProvider(widget.mangaId));
+    final chaptersState = ref.watch(mangaChaptersProvider(widget.mangaId));
+    final isInLibrary = ref.watch(isMangaInLibraryProvider(widget.mangaId));
+    final progressAsync = ref.watch(readingProgressProvider(widget.mangaId));
 
     return Scaffold(
       body: mangaAsync.when(
         data: (manga) {
           if (manga == null) return const AppErrorWidget(message: 'Manga introuvable');
           return CustomScrollView(
+            controller: _scrollController,
             slivers: [
               _buildAppBar(context, ref, manga, isInLibrary),
               SliverToBoxAdapter(
@@ -71,23 +97,16 @@ class MangaDetailPage extends ConsumerWidget {
                       ],
                       const SizedBox(height: AppSpacing.lg),
 
-                      // Bouton lire
-                      chaptersAsync.when(
-                        data: (chapters) => _buildReadButtons(context, ref, manga, chapters, progressAsync),
-                        loading: () => const SizedBox.shrink(),
-                        error: (_, __) => const SizedBox.shrink(),
-                      ),
+                      if (chaptersState.chapters.isNotEmpty)
+                        _buildReadButtons(context, ref, manga, chaptersState.chapters, progressAsync),
 
                       const SizedBox(height: AppSpacing.lg),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text('Chapitres', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-                          chaptersAsync.when(
-                            data: (c) => Text('${c.length} chapitres', style: TextStyle(color: Colors.grey[400])),
-                            loading: () => const SizedBox.shrink(),
-                            error: (_, __) => const SizedBox.shrink(),
-                          ),
+                          if (chaptersState.chapters.isNotEmpty)
+                            Text('${chaptersState.chapters.length} chapitres', style: TextStyle(color: Colors.grey[400])),
                         ],
                       ),
                       const SizedBox(height: AppSpacing.sm),
@@ -95,45 +114,52 @@ class MangaDetailPage extends ConsumerWidget {
                   ),
                 ),
               ),
-              chaptersAsync.when(
-                data: (chapters) => chapters.isEmpty
-                    ? const SliverToBoxAdapter(
-                  child: Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(32),
-                      child: Text('Aucun chapitre disponible'),
-                    ),
+
+              if (chaptersState.isLoading && chaptersState.chapters.isEmpty)
+                const SliverToBoxAdapter(
+                  child: Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator())),
+                )
+              else if (chaptersState.error != null && chaptersState.chapters.isEmpty)
+                SliverToBoxAdapter(
+                  child: AppErrorWidget(
+                    message: 'Erreur chapitres: ${chaptersState.error}',
+                    onRetry: () => ref.read(mangaChaptersProvider(widget.mangaId).notifier).fetchInitialChapters(),
                   ),
                 )
-                    : SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                        (_, i) => _ChapterTile(
-                      chapter: chapters[i],
-                      mangaId: manga.mangadexId,
-                      mangaTitle: manga.title,
-                      mangaCoverUrl: manga.coverUrl,
-                      onTap: () => _openReader(context, chapters[i], manga),
+              else if (chaptersState.chapters.isEmpty && !chaptersState.isLoading)
+                  const SliverToBoxAdapter(
+                    child: Center(
+                      child: Padding(padding: EdgeInsets.all(32), child: Text('Aucun chapitre disponible')),
                     ),
-                    childCount: chapters.length,
+                  )
+                else
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                          (context, i) {
+                        if (i == chaptersState.chapters.length) {
+                          return const Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        }
+                        return _ChapterTile(
+                          chapter: chaptersState.chapters[i],
+                          mangaId: manga.mangadexId,
+                          mangaTitle: manga.title,
+                          mangaCoverUrl: manga.coverUrl,
+                          onTap: () => _openReader(context, chaptersState.chapters[i], manga),
+                        );
+                      },
+                      childCount: chaptersState.chapters.length + (chaptersState.hasMore ? 1 : 0),
+                    ),
                   ),
-                ),
-                loading: () => const SliverToBoxAdapter(
-                  child: Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator())),
-                ),
-                error: (e, _) => SliverToBoxAdapter(
-                  child: AppErrorWidget(
-                    message: 'Erreur chapitres: $e',
-                    onRetry: () => ref.refresh(mangaChaptersProvider(mangaId)),
-                  ),
-                ),
-              ),
             ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => AppErrorWidget(
           message: 'Erreur: $e',
-          onRetry: () => ref.refresh(mangaDetailProvider(mangaId)),
+          onRetry: () => ref.refresh(mangaDetailProvider(widget.mangaId)),
         ),
       ),
     );
@@ -175,7 +201,17 @@ class MangaDetailPage extends ConsumerWidget {
       ],
       flexibleSpace: FlexibleSpaceBar(
         background: manga.coverUrl != null
-            ? CachedNetworkImage(imageUrl: manga.coverUrl!, fit: BoxFit.cover)
+            ? CachedNetworkImage(
+          imageUrl: manga.coverUrl!,
+          fit: BoxFit.cover,
+          placeholder: (context, url) => Container(color: Colors.grey[900]),
+          errorWidget: (context, url, error) => Container(
+            color: Colors.grey[900],
+            child: const Center(
+                child: Icon(Icons.broken_image_outlined, color: Colors.white54, size: 50)
+            ),
+          ),
+        )
             : Container(color: Colors.grey[800]),
       ),
     );

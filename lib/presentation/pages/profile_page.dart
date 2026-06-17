@@ -27,7 +27,7 @@ class ProfilePage extends ConsumerWidget {
           onPressed: () => context.canPop() ? context.pop() : context.go('/'),
         ),
         actions: [
-          IconButton(icon: const Icon(Icons.settings_rounded), onPressed: () => context.go('/settings')),
+          IconButton(icon: const Icon(Icons.settings_rounded), onPressed: () => context.push('/settings')),
         ],
       ),
       body: SingleChildScrollView(
@@ -35,8 +35,6 @@ class ProfilePage extends ConsumerWidget {
         child: Column(
           children: [
             const SizedBox(height: AppSpacing.md),
-
-            // Avatar
             CircleAvatar(
               radius: 56,
               backgroundColor: AppColors.primary,
@@ -59,10 +57,7 @@ class ProfilePage extends ConsumerWidget {
                   visualDensity: VisualDensity.compact,
                 ),
               ),
-
             const SizedBox(height: AppSpacing.xl),
-
-            // Stats
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.lg),
@@ -83,14 +78,9 @@ class ProfilePage extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.md),
-
-            // Menu
-            _MenuCard(icon: Icons.history_rounded, title: 'Historique de lecture',
-                subtitle: '$totalChapters chapitre(s) lu(s)', onTap: () => context.go('/history')),
-            _MenuCard(icon: Icons.favorite_rounded, title: 'Ma Bibliothèque',
-                subtitle: '${library.length} manga(s) sauvegardé(s)', onTap: () => context.go('/library')),
-            _MenuCard(icon: Icons.settings_rounded, title: 'Paramètres',
-                subtitle: 'Thème, compte, préférences', onTap: () => context.go('/settings')),
+            _MenuCard(icon: Icons.history_rounded, title: 'Historique de lecture', subtitle: '$totalChapters chapitre(s) lu(s)', onTap: () => context.push('/history')),
+            _MenuCard(icon: Icons.favorite_rounded, title: 'Ma Bibliothèque', subtitle: '${library.length} manga(s) sauvegardé(s)', onTap: () => context.push('/library')),
+            _MenuCard(icon: Icons.settings_rounded, title: 'Paramètres', subtitle: 'Thème, compte, préférences', onTap: () => context.push('/settings')),
           ],
         ),
       ),
@@ -102,7 +92,6 @@ class _StatItem extends StatelessWidget {
   final String value;
   final String label;
   final IconData icon;
-
   const _StatItem({required this.value, required this.label, required this.icon});
 
   @override
@@ -123,7 +112,6 @@ class _MenuCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback onTap;
-
   const _MenuCard({required this.icon, required this.title, required this.subtitle, required this.onTap});
 
   @override

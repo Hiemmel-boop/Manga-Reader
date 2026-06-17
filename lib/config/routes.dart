@@ -15,11 +15,12 @@ import '../presentation/pages/settings_page.dart';
 import '../presentation/providers/auth_provider.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
-
-  return GoRouter(
+  // On crée le routeur une seule fois
+  final router = GoRouter(
     initialLocation: '/splash',
     redirect: (context, state) {
+      // On lit l'état sans recréer le routeur
+      final authState = ref.read(authProvider);
       final isAuthenticated = authState.isAuthenticated;
       final isGuest = authState.isGuest;
       final loc = state.matchedLocation;
@@ -71,4 +72,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       body: Center(child: Text('Page non trouvée: ${state.matchedLocation}')),
     ),
   );
+
+  // Écoute passive : si l'utilisateur se déconnecte, on le renvoie vers l'auth
+  ref.listen<AuthState>(authProvider, (previous, next) {
+    if (previous?.isAuthenticated == true && next.isAuthenticated == false && !next.isGuest) {
+      router.go('/auth');
+    }
+  });
+
+  return router;
 });
