@@ -88,27 +88,31 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                 key: _formKey,
                 child: Column(
                   children: [
-                    _buildField(
-                      controller: _usernameCtrl,
-                      label: 'Nom d\'utilisateur',
-                      icon: Icons.person_outline,
-                      validator: (v) => (v == null || v.isEmpty) ? 'Champ requis' : null,
-                    ),
-                    const SizedBox(height: AppSpacing.md),
+                    // En mode Inscription, on demande le Nom d'utilisateur
                     if (!_isLogin) ...[
                       _buildField(
-                        controller: _emailCtrl,
-                        label: 'Email',
-                        icon: Icons.email_outlined,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (v) {
-                          if (v == null || v.isEmpty) return 'Champ requis';
-                          if (!v.contains('@')) return 'Email invalide';
-                          return null;
-                        },
+                        controller: _usernameCtrl,
+                        label: 'Nom d\'utilisateur',
+                        icon: Icons.person_outline,
+                        validator: (v) => (v == null || v.isEmpty) ? 'Champ requis' : null,
                       ),
                       const SizedBox(height: AppSpacing.md),
                     ],
+
+                    // On demande toujours l'Email (que ce soit pour connexion ou inscription)
+                    _buildField(
+                      controller: _emailCtrl,
+                      label: 'Adresse Email',
+                      icon: Icons.email_outlined,
+                      keyboardType: TextInputType.emailAddress, // Clavier avec @
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Champ requis';
+                        if (!v.contains('@')) return 'Email invalide';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+
                     _buildField(
                       controller: _passwordCtrl,
                       label: 'Mot de passe',
@@ -218,16 +222,48 @@ class _AuthPageState extends ConsumerState<AuthPage> {
     bool success;
 
     if (_isLogin) {
-      success = await notifier.login(_usernameCtrl.text.trim(), _passwordCtrl.text);
+      // On utilise l'email pour la connexion
+      success = await notifier.login(_emailCtrl.text.trim(), _passwordCtrl.text);
+      if (success && mounted) context.go('/');
     } else {
       success = await notifier.register(
         _usernameCtrl.text.trim(),
         _emailCtrl.text.trim(),
         _passwordCtrl.text,
       );
-    }
 
-    if (success && mounted) context.go('/');
+      // Si l'inscription réussit, on affiche la fenêtre d'information
+      if (success && mounted) {
+        await showDialog(
+          context: context,
+          barrierDismissible: false, // L'utilisateur doit cliquer sur le bouton
+          builder: (ctx) => AlertDialog(
+            title: const Text('Vérification requise 📧'),
+            content: const Text(
+              'Votre compte a été créé avec succès ! Veuillez consulter votre boîte de réception (et vos spams) pour confirmer votre adresse email avant de pouvoir vous connecter.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx); // Ferme la fenêtre
+                },
+                child: const Text('J\'ai compris'),
+              ),
+            ],
+          ),
+        );
+
+        // Après avoir cliqué sur "J'ai compris", on repasse sur l'écran de Connexion
+        // et on vide le mot de passe pour la sécurité.
+        if (mounted) {
+          setState(() {
+            _isLogin = true;
+            _passwordCtrl.clear();
+            _confirmCtrl.clear();
+          });
+        }
+      }
+    }
   }
 }
 

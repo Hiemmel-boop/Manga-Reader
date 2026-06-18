@@ -40,7 +40,7 @@ class ThemeNotifier extends StateNotifier<ThemeData> {
   }
 }
 
-// --- LE RESTE DU FICHIER RESTE IDENTIQUE ---
+
 final readerThemeProvider = StateNotifierProvider<ReaderThemeNotifier, String>((ref) {
   return ReaderThemeNotifier(ref.watch(preferencesProvider));
 });

@@ -41,7 +41,11 @@ class _AdvancedSearchPageState extends ConsumerState<AdvancedSearchPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Recherche avancée'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.pop()),
+        // On utilise juste context.pop() pour revenir à la page d'avant
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.md),
@@ -129,13 +133,16 @@ class _AdvancedSearchPageState extends ConsumerState<AdvancedSearchPage> {
   }
 
   void _search() {
+    // 1. On met à jour les paramètres de recherche dans Riverpod
     ref.read(searchParamsProvider.notifier).state = SearchParams(
       query: _titleCtrl.text,
       status: _status,
       contentRating: _contentRating,
       year: _year,
     );
-    context.go('/search');
+
+    // 2. On revient simplement à la page d'avant (au lieu de remplacer la page)
+    context.pop();
   }
 
   void _reset() {

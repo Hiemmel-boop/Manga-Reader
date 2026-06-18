@@ -21,19 +21,23 @@ class HomePage extends ConsumerWidget {
     final auth = ref.watch(authProvider);
     final recentProgressAsync = ref.watch(recentProgressProvider);
 
+    // Calcul de la largeur pour les cartes (2 colonnes avec espacement)
+    final screenWidth = MediaQuery.of(context).size.width;
+    final cardWidth = (screenWidth - 48) / 2; // 16 padding gauche + 16 droite + 16 entre les cartes
+
     return PopScope(
-      canPop: false, // Empêche le bouton retour de fermer l'app
+      canPop: false,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Manga Reader'),
           actions: [
             IconButton(
               icon: const Icon(Icons.search_rounded),
-              onPressed: () => context.push('/search'), // Changé en push
+              onPressed: () => context.push('/search'),
             ),
             IconButton(
               icon: const Icon(Icons.person_rounded),
-              onPressed: () => context.push('/profile'), // Changé en push
+              onPressed: () => context.push('/profile'),
             ),
           ],
         ),
@@ -61,39 +65,32 @@ class HomePage extends ConsumerWidget {
                         _SectionTitle(
                           title: 'Continuer la lecture',
                           icon: Icons.play_circle_outline_rounded,
-                          onMore: () => context.push('/history'), // Changé en push
+                          onMore: () => context.push('/history'),
                         ),
-                        SizedBox(
-                          height: 110,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.md,
-                            ),
-                            itemCount: progressList.length,
-                            itemBuilder: (_, i) => Padding(
-                              padding: const EdgeInsets.only(right: AppSpacing.md),
+                        // Affichage vertical en pleine largeur
+                        Column(
+                          children: progressList.map((p) {
+                            return Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                  AppSpacing.md, 0, AppSpacing.md, AppSpacing.md
+                              ),
                               child: _ContinueReadingCard(
-                                progress: progressList[i],
+                                progress: p,
                                 onTap: () {
-                                  final p = progressList[i];
                                   final params = {
                                     'mangaId': p.mangaId,
                                     'mangaTitle': p.mangaTitle,
-                                    if (p.mangaCoverUrl != null)
-                                      'mangaCoverUrl': p.mangaCoverUrl!,
-                                    if (p.chapterTitle != null)
-                                      'chapterTitle': p.chapterTitle!,
+                                    if (p.mangaCoverUrl != null) 'mangaCoverUrl': p.mangaCoverUrl!,
+                                    if (p.chapterTitle != null) 'chapterTitle': p.chapterTitle!,
                                   };
                                   final query = params.entries
-                                      .map((e) =>
-                                  '${e.key}=${Uri.encodeComponent(e.value)}')
+                                      .map((e) => '${e.key}=${Uri.encodeComponent(e.value)}')
                                       .join('&');
-                                  context.push('/reader/${p.chapterId}?$query'); // Changé en push
+                                  context.push('/reader/${p.chapterId}?$query');
                                 },
                               ),
-                            ),
-                          ),
+                            );
+                          }).toList(),
                         ),
                         const SizedBox(height: AppSpacing.sm),
                       ],
@@ -107,26 +104,22 @@ class HomePage extends ConsumerWidget {
                 if (library.isNotEmpty) ...[
                   _SectionTitle(
                     title: 'Ma Bibliothèque',
-                    onMore: () => context.push('/library'), // Changé en push
+                    onMore: () => context.push('/library'),
                   ),
-                  SizedBox(
-                    height: 170,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                      ),
-                      itemCount: library.take(10).length,
-                      itemBuilder: (_, i) => Padding(
-                        padding: const EdgeInsets.only(right: AppSpacing.md),
-                        child: MangaCard(
-                          manga: library[i],
-                          width: 120,
-                          height: 170,
-                          onTap: () =>
-                              context.push('/manga/${library[i].mangadexId}'), // Changé en push
-                        ),
-                      ),
+                  // Grille verticale (Wrap s'adapte tout seul)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                    child: Wrap(
+                      spacing: AppSpacing.md,
+                      runSpacing: AppSpacing.md,
+                      children: library.take(6).map((manga) {
+                        return MangaCard(
+                          manga: manga,
+                          width: cardWidth,
+                          height: cardWidth * 1.4,
+                          onTap: () => context.push('/manga/${manga.mangadexId}'),
+                        );
+                      }).toList(),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
@@ -135,33 +128,25 @@ class HomePage extends ConsumerWidget {
                 // ── Populaires ───────────────────────────────────────
                 const _SectionTitle(title: 'Populaires'),
                 popularAsync.when(
-                  data: (mangas) => SizedBox(
-                    height: 210,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                      ),
-                      itemCount: mangas.length,
-                      itemBuilder: (_, i) => Padding(
-                        padding: const EdgeInsets.only(right: AppSpacing.md),
-                        child: MangaCard(
-                          manga: mangas[i],
-                          width: 140,
-                          height: 210,
-                          onTap: () =>
-                              context.push('/manga/${mangas[i].mangadexId}'), // Changé en push
-                        ),
-                      ),
+                  data: (mangas) => Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                    child: Wrap(
+                      spacing: AppSpacing.md,
+                      runSpacing: AppSpacing.md,
+                      children: mangas.map((manga) {
+                        return MangaCard(
+                          manga: manga,
+                          width: cardWidth,
+                          height: cardWidth * 1.5,
+                          onTap: () => context.push('/manga/${manga.mangadexId}'),
+                        );
+                      }).toList(),
                     ),
                   ),
-                  loading: () => _ShimmerList(height: 210),
+                  loading: () => _ShimmerGrid(cardWidth: cardWidth),
                   error: (e, _) => Padding(
                     padding: const EdgeInsets.all(AppSpacing.md),
-                    child: Text(
-                      'Erreur de chargement',
-                      style: TextStyle(color: Colors.grey[500]),
-                    ),
+                    child: Text('Erreur de chargement', style: TextStyle(color: Colors.grey[500])),
                   ),
                 ),
 
@@ -173,21 +158,9 @@ class HomePage extends ConsumerWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _NavButton(
-                        icon: Icons.library_books_rounded,
-                        label: 'Bibliothèque',
-                        onTap: () => context.push('/library'), // Changé en push
-                      ),
-                      _NavButton(
-                        icon: Icons.history_rounded,
-                        label: 'Historique',
-                        onTap: () => context.push('/history'), // Changé en push
-                      ),
-                      _NavButton(
-                        icon: Icons.settings_rounded,
-                        label: 'Paramètres',
-                        onTap: () => context.push('/settings'), // Changé en push
-                      ),
+                      _NavButton(icon: Icons.library_books_rounded, label: 'Bibliothèque', onTap: () => context.push('/library')),
+                      _NavButton(icon: Icons.history_rounded, label: 'Historique', onTap: () => context.push('/history')),
+                      _NavButton(icon: Icons.settings_rounded, label: 'Paramètres', onTap: () => context.push('/settings')),
                     ],
                   ),
                 ),
@@ -223,22 +196,22 @@ class _WelcomeBanner extends StatelessWidget {
         children: [
           const Icon(Icons.menu_book_rounded, color: Colors.white, size: 36),
           const SizedBox(width: AppSpacing.md),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                name.isNotEmpty ? 'Bonjour, $name 👋' : 'Bienvenue !',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name.isNotEmpty ? 'Bonjour, $name 👋' : 'Bienvenue !',
+                  style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              Text(
-                'Que lisez-vous aujourd\'hui ?',
-                style: const TextStyle(color: Colors.white70, fontSize: 12),
-              ),
-            ],
+                Text(
+                  'Que lisez-vous aujourd\'hui ?',
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -250,7 +223,6 @@ class _WelcomeBanner extends StatelessWidget {
 class _ContinueReadingCard extends StatelessWidget {
   final ReadingProgress progress;
   final VoidCallback onTap;
-
   const _ContinueReadingCard({required this.progress, required this.onTap});
 
   @override
@@ -260,21 +232,17 @@ class _ContinueReadingCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 280,
+        // En pleine largeur
+        width: double.infinity,
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(AppRadius.card),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 8, offset: const Offset(0, 2)),
           ],
         ),
         child: Row(
           children: [
-            // Cover
             ClipRRect(
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(AppRadius.card),
@@ -286,24 +254,11 @@ class _ContinueReadingCard extends StatelessWidget {
                 width: 70,
                 height: 110,
                 fit: BoxFit.cover,
-                placeholder: (_, __) => Container(
-                  width: 70,
-                  color: Colors.grey[800],
-                ),
-                errorWidget: (_, __, ___) => Container(
-                  width: 70,
-                  color: Colors.grey[800],
-                  child: const Icon(Icons.book, color: Colors.grey),
-                ),
+                placeholder: (_, __) => Container(width: 70, color: Colors.grey[800]),
+                errorWidget: (_, __, ___) => Container(width: 70, color: Colors.grey[800], child: const Icon(Icons.book, color: Colors.grey)),
               )
-                  : Container(
-                width: 70,
-                color: Colors.grey[800],
-                child: const Icon(Icons.book, color: Colors.grey),
-              ),
+                  : Container(width: 70, color: Colors.grey[800], child: const Icon(Icons.book, color: Colors.grey)),
             ),
-
-            // Infos
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.sm),
@@ -311,34 +266,19 @@ class _ContinueReadingCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      progress.mangaTitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
-                      ),
-                    ),
+                    Text(progress.mangaTitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                     const SizedBox(height: 4),
                     Text(
-                      progress.chapterTitle != null
-                          ? 'Ch. ${progress.chapterNumber ?? ''} — ${progress.chapterTitle}'
-                          : 'Chapitre ${progress.chapterNumber ?? '?'}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: Colors.grey[500], fontSize: 11),
+                      progress.chapterTitle != null ? 'Ch. ${progress.chapterNumber ?? ''} — ${progress.chapterTitle}' : 'Chapitre ${progress.chapterNumber ?? '?'}',
+                      maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.grey[500], fontSize: 11),
                     ),
                     const SizedBox(height: 8),
-                    // Barre de progression
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
                         value: percent,
                         backgroundColor: Colors.grey[800],
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          AppColors.primary,
-                        ),
+                        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
                         minHeight: 5,
                       ),
                     ),
@@ -346,36 +286,17 @@ class _ContinueReadingCard extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Page ${progress.lastPage}/${progress.totalPages}',
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 10,
-                          ),
-                        ),
-                        Text(
-                          '${(percent * 100).round()}%',
-                          style: const TextStyle(
-                            color: AppColors.primary,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        Text('Page ${progress.lastPage}/${progress.totalPages}', style: TextStyle(color: Colors.grey[500], fontSize: 10)),
+                        Text('${(percent * 100).round()}%', style: const TextStyle(color: AppColors.primary, fontSize: 10, fontWeight: FontWeight.w600)),
                       ],
                     ),
                   ],
                 ),
               ),
             ),
-
-            // Bouton play
-            Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.sm),
-              child: Icon(
-                Icons.play_circle_filled_rounded,
-                color: AppColors.primary,
-                size: 32,
-              ),
+            const Padding(
+              padding: EdgeInsets.only(right: AppSpacing.sm),
+              child: Icon(Icons.play_circle_filled_rounded, color: AppColors.primary, size: 32),
             ),
           ],
         ),
@@ -389,15 +310,12 @@ class _SectionTitle extends StatelessWidget {
   final String title;
   final IconData? icon;
   final VoidCallback? onMore;
-
   const _SectionTitle({required this.title, this.icon, this.onMore});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.sm,
-      ),
+      padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.sm),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -407,54 +325,39 @@ class _SectionTitle extends StatelessWidget {
                 Icon(icon, color: AppColors.primary, size: 20),
                 const SizedBox(width: AppSpacing.sm),
               ],
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
             ],
           ),
-          if (onMore != null)
-            TextButton(
-              onPressed: onMore,
-              child: const Text('Voir tout'),
-            ),
+          if (onMore != null) TextButton(onPressed: onMore, child: const Text('Voir tout')),
         ],
       ),
     );
   }
 }
 
-// ── Shimmer chargement ────────────────────────────────────────────────────────
-class _ShimmerList extends StatelessWidget {
-  final double height;
-  const _ShimmerList({required this.height});
+// ── Shimmer chargement (Grille) ───────────────────────────────────────────────
+class _ShimmerGrid extends StatelessWidget {
+  final double cardWidth;
+  const _ShimmerGrid({required this.cardWidth});
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: height,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-        itemCount: 5,
-        itemBuilder: (_, __) => Padding(
-          padding: const EdgeInsets.only(right: AppSpacing.md),
-          child: Shimmer.fromColors(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      child: Wrap(
+        spacing: AppSpacing.md,
+        runSpacing: AppSpacing.md,
+        children: List.generate(4, (_) {
+          return Shimmer.fromColors(
             baseColor: Colors.grey[850]!,
             highlightColor: Colors.grey[700]!,
             child: Container(
-              width: 140,
-              height: height,
-              decoration: BoxDecoration(
-                color: Colors.grey[850],
-                borderRadius: BorderRadius.circular(AppRadius.card),
-              ),
+              width: cardWidth,
+              height: cardWidth * 1.5,
+              decoration: BoxDecoration(color: Colors.grey[850], borderRadius: BorderRadius.circular(AppRadius.card)),
             ),
-          ),
-        ),
+          );
+        }),
       ),
     );
   }
@@ -465,12 +368,7 @@ class _NavButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-
-  const _NavButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
+  const _NavButton({required this.icon, required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -478,18 +376,12 @@ class _NavButton extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppRadius.medium),
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.md,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.md),
         child: Column(
           children: [
             Icon(icon, size: 30, color: AppColors.primary),
             const SizedBox(height: AppSpacing.xs),
-            Text(
-              label,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-            ),
+            Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
           ],
         ),
       ),

@@ -37,7 +37,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           IconButton(
             icon: const Icon(Icons.tune_rounded),
             tooltip: 'Recherche avancée',
-            onPressed: () => context.go('/advanced-search'),
+            onPressed: () => context.push('/advanced-search'),
           ),
         ],
       ),
