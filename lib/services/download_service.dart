@@ -5,17 +5,17 @@ import 'package:path_provider/path_provider.dart';
 import 'package:dio/dio.dart';
 import '../core/logger.dart';
 import '../data/repositories/chapter_repository.dart';
+import 'notification_service.dart'; // <-- L'IMPORT EST LÀ
 
 final downloadServiceProvider = Provider<DownloadService>((ref) {
   return DownloadService(ref);
 });
 
-// État d'un téléchargement
 class DownloadState {
   final String chapterId;
   final String mangaTitle;
   final String chapterTitle;
-  final double progress; // 0.0 à 1.0
+  final double progress;
   final bool isComplete;
   final bool hasError;
 
@@ -44,7 +44,6 @@ class DownloadState {
   }
 }
 
-// Provider pour suivre l'état des téléchargements en cours
 final downloadStatesProvider =
 StateNotifierProvider<DownloadStatesNotifier, Map<String, DownloadState>>(
       (ref) => DownloadStatesNotifier(),
@@ -97,7 +96,6 @@ class DownloadService {
 
   DownloadService(this._ref);
 
-  // Dossier de téléchargement
   Future<Directory> get _downloadDir async {
     final appDir = await getApplicationDocumentsDirectory();
     final dir = Directory('${appDir.path}/downloads');
@@ -105,14 +103,12 @@ class DownloadService {
     return dir;
   }
 
-  // Vérifier si un chapitre est téléchargé
   Future<bool> isDownloaded(String chapterId) async {
     final dir = await _downloadDir;
     final chapterDir = Directory('${dir.path}/$chapterId');
     return chapterDir.exists();
   }
 
-  // Récupérer les IDs de tous les chapitres téléchargés
   Future<List<String>> getDownloadedChapterIds() async {
     try {
       final dir = await _downloadDir;
@@ -128,17 +124,17 @@ class DownloadService {
     }
   }
 
-  // Télécharger un chapitre
   Future<void> downloadChapter({
     required String chapterId,
     required String mangaId,
     required String mangaTitle,
     required String chapterTitle,
   }) async {
-    // Non supporté sur Web
     if (kIsWeb) return;
 
     final notifier = _ref.read(downloadStatesProvider.notifier);
+    final notifService = _ref.read(notificationServiceProvider);
+    final notifId = chapterId.hashCode;
 
     notifier.start(DownloadState(
       chapterId: chapterId,
@@ -147,21 +143,26 @@ class DownloadService {
     ));
 
     try {
-      // Récupérer les URLs des pages
       final chapterRepo = _ref.read(chapterRepositoryProvider);
       final pages = await chapterRepo.getChapterPages(chapterId);
 
       if (pages.isEmpty) {
         notifier.error(chapterId);
+        await notifService.showDownloadError(id: notifId, title: chapterTitle);
         return;
       }
 
-      // Créer le dossier du chapitre
       final dir = await _downloadDir;
       final chapterDir = Directory('${dir.path}/$chapterId');
       await chapterDir.create(recursive: true);
 
-      // Télécharger chaque page
+      await notifService.showDownloadProgress(
+        id: notifId,
+        title: chapterTitle,
+        progress: 0,
+        maxProgress: pages.length,
+      );
+
       for (int i = 0; i < pages.length; i++) {
         final pageUrl = pages[i];
         final fileName = 'page_${i.toString().padLeft(3, '0')}.jpg';
@@ -169,20 +170,26 @@ class DownloadService {
 
         await _dio.download(pageUrl, filePath);
         notifier.update(chapterId, (i + 1) / pages.length);
+
+        await notifService.showDownloadProgress(
+          id: notifId,
+          title: chapterTitle,
+          progress: i + 1,
+          maxProgress: pages.length,
+        );
       }
 
-      // TODO: Sauvegarder les chemins locaux avec Sqflite
-      // (Le téléchargement des images fonctionne, mais la BDD n'est pas mise à jour pour l'instant)
-
       notifier.complete(chapterId);
+      await notifService.showDownloadComplete(id: notifId, title: chapterTitle);
+
       appLogger.i('Téléchargement terminé : $chapterTitle');
     } catch (e) {
       appLogger.e('downloadChapter', error: e);
       notifier.error(chapterId);
+      await notifService.showDownloadError(id: notifId, title: chapterTitle);
     }
   }
 
-  // Supprimer un chapitre téléchargé
   Future<void> deleteDownload(String chapterId) async {
     try {
       final dir = await _downloadDir;
@@ -191,7 +198,8 @@ class DownloadService {
         await chapterDir.delete(recursive: true);
       }
 
-      // TODO: Remettre les URLs en ligne avec Sqflite
+      final notifService = _ref.read(notificationServiceProvider);
+      await notifService.cancel(chapterId.hashCode);
 
       appLogger.i('Téléchargement supprimé : $chapterId');
     } catch (e) {
@@ -199,7 +207,6 @@ class DownloadService {
     }
   }
 
-  // Taille totale des téléchargements
   Future<String> getTotalDownloadSize() async {
     try {
       final dir = await _downloadDir;

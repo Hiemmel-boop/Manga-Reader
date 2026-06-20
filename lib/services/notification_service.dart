@@ -1,3 +1,4 @@
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/logger.dart';
@@ -9,14 +10,136 @@ final notificationServiceProvider = Provider<NotificationService>((ref) {
 });
 
 class NotificationService {
+  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
 
   Future<void> initialize() async {
+    if (_initialized) return;
+
+    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const DarwinInitializationSettings initializationSettingsIOS = DarwinInitializationSettings();
+    const LinuxInitializationSettings initializationSettingsLinux = LinuxInitializationSettings(
+      defaultActionName: 'Open notification',
+    );
+
+    const InitializationSettings initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsIOS,
+      linux: initializationSettingsLinux,
+    );
+
+    await _flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      'downloads_channel',
+      'Téléchargements',
+      description: 'Notifications pour les téléchargements de mangas',
+      importance: Importance.low,
+    );
+
+    await _flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
+
     _initialized = true;
-    appLogger.i('NotificationService initialisé (Mode fantôme - pas de notifications physiques)');
+    appLogger.i('NotificationService initialisé');
   }
 
-  // Vérifier les nouveaux chapitres (la logique tourne en fond, mais n'affiche rien)
+  Future<void> showDownloadProgress({
+    required int id,
+    required String title,
+    required int progress,
+    required int maxProgress,
+  }) async {
+    final AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'downloads_channel',
+      'Téléchargements',
+      channelDescription: 'Notifications pour les téléchargements de mangas',
+      importance: Importance.low,
+      priority: Priority.low,
+      showProgress: true,
+      maxProgress: maxProgress,
+      progress: progress,
+      ongoing: true,
+      onlyAlertOnce: true,
+    );
+    const DarwinNotificationDetails iOSPlatformChannelSpecifics = DarwinNotificationDetails();
+    const LinuxNotificationDetails linuxPlatformChannelSpecifics = LinuxNotificationDetails();
+
+    final NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+      iOS: iOSPlatformChannelSpecifics,
+      linux: linuxPlatformChannelSpecifics,
+    );
+
+    await _flutterLocalNotificationsPlugin.show(
+      id,
+      title,
+      'Téléchargement en cours... $progress/$maxProgress',
+      platformChannelSpecifics,
+    );
+  }
+
+  Future<void> showDownloadComplete({
+    required int id,
+    required String title,
+  }) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'downloads_channel',
+      'Téléchargements',
+      channelDescription: 'Notifications pour les téléchargements de mangas',
+      importance: Importance.defaultImportance,
+      priority: Priority.defaultPriority,
+    );
+    const DarwinNotificationDetails iOSPlatformChannelSpecifics = DarwinNotificationDetails();
+    const LinuxNotificationDetails linuxPlatformChannelSpecifics = LinuxNotificationDetails();
+
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+      iOS: iOSPlatformChannelSpecifics,
+      linux: linuxPlatformChannelSpecifics,
+    );
+
+    await _flutterLocalNotificationsPlugin.show(
+      id,
+      title,
+      'Téléchargement terminé !',
+      platformChannelSpecifics,
+    );
+  }
+
+  Future<void> showDownloadError({
+    required int id,
+    required String title,
+  }) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'downloads_channel',
+      'Téléchargements',
+      channelDescription: 'Notifications pour les téléchargements de mangas',
+      importance: Importance.high,
+      priority: Priority.high,
+    );
+    const DarwinNotificationDetails iOSPlatformChannelSpecifics = DarwinNotificationDetails();
+    const LinuxNotificationDetails linuxPlatformChannelSpecifics = LinuxNotificationDetails();
+
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+      iOS: iOSPlatformChannelSpecifics,
+      linux: linuxPlatformChannelSpecifics,
+    );
+
+    await _flutterLocalNotificationsPlugin.show(
+      id,
+      title,
+      'Erreur lors du téléchargement.',
+      platformChannelSpecifics,
+    );
+  }
+
+  Future<void> cancel(int id) async {
+    await _flutterLocalNotificationsPlugin.cancel(id);
+  }
+
   Future<void> checkNewChapters(ProviderContainer container) async {
     if (!_initialized) return;
 
@@ -42,7 +165,6 @@ class NotificationService {
 
           if (current != null) {
             if (lastKnown != null && lastKnown != current) {
-              // Normalement on affiche la notification ici, mais on se contente de logger
               appLogger.i('NOUVEAU CHAPITRE TROUVÉ : ${manga.title} — Ch.$current');
             }
             await prefs.setString(key, current);
@@ -59,6 +181,6 @@ class NotificationService {
   }
 
   Future<void> cancelAll() async {
-    // Rien à faire
+    await _flutterLocalNotificationsPlugin.cancelAll();
   }
 }

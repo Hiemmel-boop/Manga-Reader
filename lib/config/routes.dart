@@ -12,14 +12,13 @@ import '../presentation/pages/advanced_search_page.dart';
 import '../presentation/pages/history_page.dart';
 import '../presentation/pages/profile_page.dart';
 import '../presentation/pages/settings_page.dart';
+import '../presentation/pages/downloads_page.dart';
 import '../presentation/providers/auth_provider.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
-  // On crée le routeur une seule fois
   final router = GoRouter(
     initialLocation: '/splash',
     redirect: (context, state) {
-      // On lit l'état sans recréer le routeur
       final authState = ref.read(authProvider);
       final isAuthenticated = authState.isAuthenticated;
       final isGuest = authState.isGuest;
@@ -31,7 +30,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/auth';
       }
 
-      if ((isAuthenticated || isGuest) && loc == '/auth') {
+      // MODIFICATION : On n'autorise que les VRAIS utilisateurs connectés à bloquer l'accès à /auth.
+      // Les invités (isGuest) peuvent maintenant y aller pour se connecter !
+      if (isAuthenticated && loc == '/auth') {
         return '/';
       }
 
@@ -67,13 +68,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/history', builder: (_, __) => const HistoryPage()),
       GoRoute(path: '/profile', builder: (_, __) => const ProfilePage()),
       GoRoute(path: '/settings', builder: (_, __) => const SettingsPage()),
+      GoRoute(path: '/downloads', builder: (_, __) => const DownloadsPage()),
     ],
     errorBuilder: (context, state) => Scaffold(
       body: Center(child: Text('Page non trouvée: ${state.matchedLocation}')),
     ),
   );
 
-  // Écoute passive : si l'utilisateur se déconnecte, on le renvoie vers l'auth
   ref.listen<AuthState>(authProvider, (previous, next) {
     if (previous?.isAuthenticated == true && next.isAuthenticated == false && !next.isGuest) {
       router.go('/auth');

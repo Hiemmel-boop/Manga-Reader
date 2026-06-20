@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/manga_provider.dart';
 import '../providers/chapter_provider.dart';
 import '../providers/history_provider.dart';
+import '../providers/auth_provider.dart'; // <-- AJOUT : Pour vérifier le mode invité
 import '../widgets/app_widgets.dart';
 import '../../data/models/manga.dart';
 import '../../data/models/chapter.dart';
@@ -47,6 +48,7 @@ class _MangaDetailPageState extends ConsumerState<MangaDetailPage> {
     final chaptersState = ref.watch(mangaChaptersProvider(widget.mangaId));
     final isInLibrary = ref.watch(isMangaInLibraryProvider(widget.mangaId));
     final progressAsync = ref.watch(readingProgressProvider(widget.mangaId));
+    final auth = ref.watch(authProvider); // <-- AJOUT : On regarde si c'est un invité
 
     return Scaffold(
       body: mangaAsync.when(
@@ -55,7 +57,7 @@ class _MangaDetailPageState extends ConsumerState<MangaDetailPage> {
           return CustomScrollView(
             controller: _scrollController,
             slivers: [
-              _buildAppBar(context, ref, manga, isInLibrary),
+              _buildAppBar(context, ref, manga, isInLibrary, auth.isGuest), // <-- AJOUT
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.all(AppSpacing.md),
@@ -147,6 +149,7 @@ class _MangaDetailPageState extends ConsumerState<MangaDetailPage> {
                           mangaId: manga.mangadexId,
                           mangaTitle: manga.title,
                           mangaCoverUrl: manga.coverUrl,
+                          isGuest: auth.isGuest, // <-- AJOUT
                           onTap: () => _openReader(context, chaptersState.chapters[i], manga),
                         );
                       },
@@ -165,7 +168,8 @@ class _MangaDetailPageState extends ConsumerState<MangaDetailPage> {
     );
   }
 
-  SliverAppBar _buildAppBar(BuildContext context, WidgetRef ref, Manga manga, bool isInLibrary) {
+  // <-- AJOUT : On ajoute le paramètre isGuest
+  SliverAppBar _buildAppBar(BuildContext context, WidgetRef ref, Manga manga, bool isInLibrary, bool isGuest) {
     return SliverAppBar(
       expandedHeight: 300,
       pinned: true,
@@ -189,6 +193,12 @@ class _MangaDetailPageState extends ConsumerState<MangaDetailPage> {
             ),
           ),
           onPressed: () {
+            // <-- MODIFICATION : Blocage pour les invités
+            if (isGuest) {
+              _showGuestDialog(context);
+              return;
+            }
+
             if (isInLibrary) {
               ref.read(libraryProvider.notifier).remove(manga.mangadexId);
               _showSnack(context, 'Retiré de la bibliothèque');
@@ -288,6 +298,27 @@ class _MangaDetailPageState extends ConsumerState<MangaDetailPage> {
   void _showSnack(BuildContext context, String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
+
+  // <-- AJOUT : La boîte de dialogue pour les invités
+  void _showGuestDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Compte requis'),
+        content: const Text('Vous êtes en mode invité. Créez un compte ou connectez-vous pour utiliser cette fonctionnalité et sauvegarder vos données.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.go('/auth'); // Envoie vers la page de connexion
+            },
+            child: const Text('Se connecter'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _StatusChip extends StatelessWidget {
@@ -311,6 +342,7 @@ class _ChapterTile extends ConsumerWidget {
   final String mangaId;
   final String mangaTitle;
   final String? mangaCoverUrl;
+  final bool isGuest; // <-- AJOUT
   final VoidCallback onTap;
 
   const _ChapterTile({
@@ -318,6 +350,7 @@ class _ChapterTile extends ConsumerWidget {
     required this.mangaId,
     required this.mangaTitle,
     required this.mangaCoverUrl,
+    required this.isGuest, // <-- AJOUT
     required this.onTap,
   });
 
@@ -378,6 +411,28 @@ class _ChapterTile extends ConsumerWidget {
   }
 
   void _download(BuildContext context, WidgetRef ref) {
+    // <-- MODIFICATION : Blocage pour les invités
+    if (isGuest) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Compte requis'),
+          content: const Text('Vous êtes en mode invité. Créez un compte pour télécharger des chapitres hors-ligne.'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                context.go('/auth');
+              },
+              child: const Text('Se connecter'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     ref.read(downloadServiceProvider).downloadChapter(
       chapterId: chapter.mangadexId,
       mangaId: mangaId,

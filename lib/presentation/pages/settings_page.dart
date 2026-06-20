@@ -60,10 +60,7 @@ class SettingsPage extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.logout_rounded, color: Colors.orange),
             title: const Text('Déconnexion'),
-            onTap: () async {
-              await ref.read(authProvider.notifier).logout();
-              if (context.mounted) context.go('/auth');
-            },
+            onTap: () => _showLogoutDialog(context, ref), // <-- MODIFICATION ICI
           ),
           const Divider(),
 
@@ -102,6 +99,35 @@ class SettingsPage extends ConsumerWidget {
       AppConstants.readerThemeSepia => 'Sépia',
       _ => 'Sombre',
     };
+  }
+
+  // ─── NOUVELLE FONCTION : Boîte de dialogue de déconnexion ───
+  void _showLogoutDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Déconnexion'),
+        content: const Text(
+          'Voulez-vous vraiment vous déconnecter ?\n\nToutes vos données locales (bibliothèque, historique) seront effacées de cet appareil.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Annuler'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx); // 1. Ferme la popup
+              await ref.read(authProvider.notifier).logout(); // 2. Déconnecte et vide le cache
+              if (context.mounted) {
+                context.go('/auth'); // 3. Éjecte vers la page de connexion
+              }
+            },
+            child: const Text('Confirmer', style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showAppThemeDialog(BuildContext context, WidgetRef ref, String current) {

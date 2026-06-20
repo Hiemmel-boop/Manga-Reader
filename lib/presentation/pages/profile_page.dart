@@ -58,6 +58,24 @@ class ProfilePage extends ConsumerWidget {
                 ),
               ),
             const SizedBox(height: AppSpacing.xl),
+
+            // ── NOUVEAU : Bouton de connexion pour les invités ──
+            if (auth.isGuest)
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => context.go('/auth'),
+                    icon: const Icon(Icons.login_rounded),
+                    label: const Text('SE CONNECTER / CRÉER UN COMPTE'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                  ),
+                ),
+              ),
+
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.lg),
@@ -80,6 +98,7 @@ class ProfilePage extends ConsumerWidget {
             const SizedBox(height: AppSpacing.md),
             _MenuCard(icon: Icons.history_rounded, title: 'Historique de lecture', subtitle: '$totalChapters chapitre(s) lu(s)', onTap: () => context.push('/history')),
             _MenuCard(icon: Icons.favorite_rounded, title: 'Ma Bibliothèque', subtitle: '${library.length} manga(s) sauvegardé(s)', onTap: () => context.push('/library')),
+            _MenuCard(icon: Icons.download_rounded, title: 'Téléchargements', subtitle: 'Gérer les chapitres hors-ligne', onTap: () => context.push('/downloads')),
             _MenuCard(icon: Icons.settings_rounded, title: 'Paramètres', subtitle: 'Thème, compte, préférences', onTap: () => context.push('/settings')),
           ],
         ),

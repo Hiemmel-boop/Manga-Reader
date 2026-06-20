@@ -102,4 +102,13 @@ class DatabaseHelper {
     final db = await database;
     await db.delete('reading_history');
   }
+
+  // ─── NETTOYAGE (NOUVEAU) ──────────────────────────────────
+
+  Future<void> clearAllData() async {
+    final db = await database;
+    // On vide la table des mangas et de l'historique
+    await db.delete('mangas');
+    await db.delete('reading_history');
+  }
 }
