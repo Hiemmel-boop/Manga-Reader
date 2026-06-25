@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase; // Préfixe
-import '../local/database.dart'; // <-- AJOUT : On importe le Frigo
 import '../local/preferences.dart';
 import '../remote/supabase_provider.dart';
 import '../models/user.dart'; // Ton modèle local
@@ -9,17 +8,14 @@ final userRepositoryProvider = Provider<UserRepository>((ref) {
   return UserRepository(
     ref.watch(supabaseProvider),
     ref.watch(preferencesProvider),
-    DatabaseHelper(), // <-- AJOUT : On donne le Frigo au Chef VIP
   );
 });
 
 class UserRepository {
   final supabase.SupabaseClient _supabase;
   final Preferences _prefs;
-  final DatabaseHelper _db; // <-- AJOUT : La variable du Frigo
 
-  // On modifie le constructeur pour accepter le Frigo
-  UserRepository(this._supabase, this._prefs, this._db);
+  UserRepository(this._supabase, this._prefs);
 
   // Traduction : Supabase User -> Ton modèle User local
   User? _mapSupabaseUserToLocale(supabase.User? supabaseUser) {
@@ -53,8 +49,7 @@ class UserRepository {
 
   Future<void> logout() async {
     await _supabase.auth.signOut();        // 1. Coupe la connexion au Cloud (Supabase)
-    await _db.clearAllData();              // 2. VIDE le Frigo (Bibliothèque + Historique local) <-- AJOUT
-    await _prefs.clearCurrentUser();       // 3. VIDE le Vestiaire (Préférences de l'utilisateur)
+    await _prefs.clearCurrentUser();       // 2. VIDE le Vestiaire (Préférences de l'utilisateur)
   }
 
   Future<User?> getCurrentUser() async {
